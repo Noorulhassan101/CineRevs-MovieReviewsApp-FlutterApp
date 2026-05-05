@@ -1,118 +1,177 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/models/media_item.dart';
 import '../../../shared/widgets/film_grain.dart';
+import '../../reviews/data/reviews_repository.dart';
+import '../../reviews/presentation/widgets/review_card.dart';
+import '../../reviews/presentation/widgets/review_sheet.dart';
 
-class MediaDetailsScreen extends StatelessWidget {
+class MediaDetailsScreen extends ConsumerWidget {
   final MediaItem item;
 
   const MediaDetailsScreen({super.key, required this.item});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          // Cinematic Backdrop
-          SliverAppBar(
-            expandedHeight: 400,
-            pinned: true,
-            backgroundColor: AppColors.background,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (item.backdropPath != null || item.posterPath != null)
-                    CachedNetworkImage(
-                      imageUrl: item.backdropPath ?? item.posterPath!,
-                      fit: BoxFit.cover,
-                    ),
-                  // Dark Gradient Overlay for readability
-                  Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          AppColors.background,
-                        ],
-                        stops: [0.3, 1.0],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final reviewsAsync = ref.watch(mediaReviewsProvider(item.id));
+
+    return FilmGrain(
+      child: Scaffold(
+        body: CustomScrollView(
+          slivers: [
+            // Cinematic Backdrop
+            SliverAppBar(
+              expandedHeight: 400,
+              pinned: true,
+              backgroundColor: AppColors.background,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+              flexibleSpace: FlexibleSpaceBar(
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (item.backdropPath != null || item.posterPath != null)
+                      CachedNetworkImage(
+                        imageUrl: item.backdropPath ?? item.posterPath!,
+                        fit: BoxFit.cover,
+                      ),
+                    // Dark Gradient Overlay for readability
+                    const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            AppColors.background,
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
 
-          // Details Content
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title
-                  Text(
-                    item.title.toUpperCase(),
-                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                          color: AppColors.primaryAccent,
+            // Details Content
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.title.toUpperCase(),
+                            style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                                  color: AppColors.primaryAccent,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 2,
+                                ),
+                          ),
                         ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Metadata Row
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.textSecondary),
-                          borderRadius: BorderRadius.circular(4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.amber.withOpacity(0.5)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.star, color: Colors.amber, size: 18),
+                              const SizedBox(width: 4),
+                              Text(
+                                item.voteAverage.toStringAsFixed(1),
+                                style: const TextStyle(
+                                  color: Colors.amber,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        child: Text(
-                          item.type.name.toUpperCase(),
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      item.overview,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        height: 1.6,
+                        fontSize: 16,
                       ),
-                      const SizedBox(width: 12),
-                      const Icon(Icons.star, color: AppColors.primaryAccent, size: 20),
-                      const SizedBox(width: 4),
-                      Text(
-                        item.voteAverage.toStringAsFixed(1),
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              color: AppColors.primaryAccent,
+                    ),
+                    const SizedBox(height: 48),
+                    
+                    // Community Reviews Header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'COMMUNITY REVIEWS',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (context) => ReviewSheet(mediaItem: item),
+                            );
+                          },
+                          icon: const Icon(Icons.add, color: AppColors.primaryAccent),
+                          label: const Text(
+                            'WRITE ONE',
+                            style: TextStyle(color: AppColors.primaryAccent),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Reviews List
+                    reviewsAsync.when(
+                      data: (reviews) {
+                        if (reviews.isEmpty) {
+                          return const Center(
+                            child: Text(
+                              'BE THE FIRST TO REVIEW THIS.',
+                              style: TextStyle(color: Colors.white24, letterSpacing: 1),
                             ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Synopsis Header
-                  Text(
-                    'SYNOPSIS',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          letterSpacing: 2,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Synopsis Text
-                  Text(
-                    item.overview,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          height: 1.6,
-                        ),
-                  ),
-                  
-                  const SizedBox(height: 100), // Space for FAB in Phase 2
-                ],
+                          );
+                        }
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          padding: EdgeInsets.zero,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: reviews.length,
+                          itemBuilder: (context, index) => ReviewCard(review: reviews[index]),
+                        );
+                      },
+                      loading: () => const Center(child: CircularProgressIndicator()),
+                      error: (err, stack) => Center(child: Text('Error: $err')),
+                    ),
+                    const SizedBox(height: 100),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

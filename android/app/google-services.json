@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "998393556558",
+    "project_id": "cinevault-444d5",
+    "storage_bucket": "cinevault-444d5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:998393556558:android:e5f361368d354fc8fe9d1f",
+        "android_client_info": {
+          "package_name": "com.example.cinevault"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArPCHPyTwTc5YLiScDmPblCs6_s757Cxg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
