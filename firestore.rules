@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Reviews ──────────────────────────────────────────────────────
+    // Anyone can read (for global feed + per-media listings).
+    // Only authenticated users can create, and only with their own userId.
+    // Users can only update/delete their own reviews.
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null
+                            && resource.data.userId == request.auth.uid;
+    }
+
+    // ── Watchlist ────────────────────────────────────────────────────
+    // Users can only read and write their own watchlist entries.
+    // Document ID format: {userId}_{mediaId}
+    match /watchlist/{docId} {
+      allow read, write: if request.auth != null
+                         && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid;
+    }
+
+    // ── Default: deny everything else ────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

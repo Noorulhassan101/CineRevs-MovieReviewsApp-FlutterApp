@@ -171,5 +171,133 @@ class _MediaReviewsProviderElement
   @override
   String get mediaId => (origin as MediaReviewsProvider).mediaId;
 }
+
+String _$averageRatingHash() => r'20d78e6fc7eda2e106f61e9b57b69eee57b09103';
+
+/// See also [averageRating].
+@ProviderFor(averageRating)
+const averageRatingProvider = AverageRatingFamily();
+
+/// See also [averageRating].
+class AverageRatingFamily extends Family<AsyncValue<double>> {
+  /// See also [averageRating].
+  const AverageRatingFamily();
+
+  /// See also [averageRating].
+  AverageRatingProvider call(
+    String mediaId,
+  ) {
+    return AverageRatingProvider(
+      mediaId,
+    );
+  }
+
+  @override
+  AverageRatingProvider getProviderOverride(
+    covariant AverageRatingProvider provider,
+  ) {
+    return call(
+      provider.mediaId,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'averageRatingProvider';
+}
+
+/// See also [averageRating].
+class AverageRatingProvider extends AutoDisposeFutureProvider<double> {
+  /// See also [averageRating].
+  AverageRatingProvider(
+    String mediaId,
+  ) : this._internal(
+          (ref) => averageRating(
+            ref as AverageRatingRef,
+            mediaId,
+          ),
+          from: averageRatingProvider,
+          name: r'averageRatingProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$averageRatingHash,
+          dependencies: AverageRatingFamily._dependencies,
+          allTransitiveDependencies:
+              AverageRatingFamily._allTransitiveDependencies,
+          mediaId: mediaId,
+        );
+
+  AverageRatingProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.mediaId,
+  }) : super.internal();
+
+  final String mediaId;
+
+  @override
+  Override overrideWith(
+    FutureOr<double> Function(AverageRatingRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: AverageRatingProvider._internal(
+        (ref) => create(ref as AverageRatingRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        mediaId: mediaId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<double> createElement() {
+    return _AverageRatingProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is AverageRatingProvider && other.mediaId == mediaId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, mediaId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+mixin AverageRatingRef on AutoDisposeFutureProviderRef<double> {
+  /// The parameter `mediaId` of this provider.
+  String get mediaId;
+}
+
+class _AverageRatingProviderElement
+    extends AutoDisposeFutureProviderElement<double> with AverageRatingRef {
+  _AverageRatingProviderElement(super.provider);
+
+  @override
+  String get mediaId => (origin as AverageRatingProvider).mediaId;
+}
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

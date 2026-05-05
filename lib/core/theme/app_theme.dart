@@ -55,4 +55,34 @@ class AppTheme {
       ),
     );
   }
+
+  static ThemeData get obsidianTheme {
+    return darkTheme.copyWith(
+      scaffoldBackgroundColor: AppColors.obsidianBackground,
+      colorScheme: const ColorScheme.dark(
+        primary: AppColors.obsidianAccent,
+        secondary: AppColors.secondaryAccent,
+        surface: AppColors.obsidianSurface,
+        background: AppColors.obsidianBackground,
+      ),
+      appBarTheme: darkTheme.appBarTheme.copyWith(
+        backgroundColor: AppColors.obsidianBackground,
+      ),
+    );
+  }
+
+  static ThemeData get nebulaTheme {
+    return darkTheme.copyWith(
+      scaffoldBackgroundColor: AppColors.nebulaBackground,
+      colorScheme: const ColorScheme.dark(
+        primary: AppColors.nebulaAccent,
+        secondary: AppColors.secondaryAccent,
+        surface: AppColors.nebulaSurface,
+        background: AppColors.nebulaBackground,
+      ),
+      appBarTheme: darkTheme.appBarTheme.copyWith(
+        backgroundColor: AppColors.nebulaBackground,
+      ),
+    );
+  }
 }

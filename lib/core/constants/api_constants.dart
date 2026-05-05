@@ -9,5 +9,5 @@ class ApiConstants {
   
   // API Keys (Placeholders)
   // IMPORTANT: User should replace these with their own keys
-  static const String tmdbApiKey = 'YOUR_TMDB_API_KEY';
+  static const String tmdbApiKey = '5d6a293228f8e6be09b20361d5c87573';
 }

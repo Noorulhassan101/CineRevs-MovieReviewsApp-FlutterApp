@@ -1,27 +1,26 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'discovery_repository.dart';
+part of 'theme_controller.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$discoveryRepositoryHash() =>
-    r'34b2e2ebecaf3167a2fd820e51134c99e2355300';
+String _$themeControllerHash() => r'8ab3cabf3719703d26ce62d908fb192d10476507';
 
-/// See also [discoveryRepository].
-@ProviderFor(discoveryRepository)
-final discoveryRepositoryProvider =
-    AutoDisposeProvider<DiscoveryRepository>.internal(
-  discoveryRepository,
-  name: r'discoveryRepositoryProvider',
+/// See also [ThemeController].
+@ProviderFor(ThemeController)
+final themeControllerProvider =
+    AutoDisposeNotifierProvider<ThemeController, AppThemeMode>.internal(
+  ThemeController.new,
+  name: r'themeControllerProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$discoveryRepositoryHash,
+      : _$themeControllerHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef DiscoveryRepositoryRef = AutoDisposeProviderRef<DiscoveryRepository>;
+typedef _$ThemeController = AutoDisposeNotifier<AppThemeMode>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
