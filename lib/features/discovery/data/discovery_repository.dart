@@ -4,6 +4,7 @@ import '../../../core/constants/api_constants.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../shared/models/media_item.dart';
 import '../../../shared/models/media_mappers.dart';
+import '../../../shared/models/cast_member.dart';
 import 'package:isar/isar.dart';
 import '../domain/discovery_item.dart';
 import '../domain/recent_search.dart';
@@ -17,121 +18,60 @@ class DiscoveryRepository {
 
   DiscoveryRepository(this._dio, this._isar);
 
-  Future<List<MediaItem>> getTrendingMovies() async {
-    // 1. Check Cache
-    final cached = await _isar.discoveryItems
-        .filter()
-        .categoryEqualTo('trending_movies')
-        .findAll();
-    
-    if (cached.isNotEmpty) {
-      // Return cached immediately, then fetch fresh in background if needed
-      // (Simplified: returning cached if present, update on next call)
-    }
-
+  Future<List<MediaItem>> getTrendingMovies({int page = 1}) async {
     try {
       final response = await _dio.get(
         '${ApiConstants.tmdbBaseUrl}/trending/movie/day',
-        queryParameters: {'api_key': ApiConstants.tmdbApiKey},
+        queryParameters: {
+          'api_key': ApiConstants.tmdbApiKey,
+          'page': page,
+        },
       );
       final List results = response.data['results'];
-      final items = results.map((json) => MediaMappers.fromTmdb(json, MediaType.movie)).toList();
-      
-      // 2. Update Cache
-      await _isar.writeTxn(() async {
-        await _isar.discoveryItems.filter().categoryEqualTo('trending_movies').deleteAll();
-        final discoveryItems = items.map((item) => DiscoveryItem()
-          ..mediaId = item.id
-          ..category = 'trending_movies'
-          ..title = item.title
-          ..overview = item.overview
-          ..posterPath = item.posterPath
-          ..backdropPath = item.backdropPath
-          ..type = item.type.name
-          ..voteAverage = item.voteAverage
-          ..cachedAt = DateTime.now()).toList();
-        await _isar.discoveryItems.putAll(discoveryItems);
-      });
-      
-      return items;
+      return results.map((json) => MediaMappers.fromTmdb(json, MediaType.movie)).toList();
     } catch (e) {
-      // 3. Fallback to cache on error
-      return cached.map((c) => MediaItem(
-        id: c.mediaId,
-        title: c.title,
-        overview: c.overview,
-        posterPath: c.posterPath,
-        backdropPath: c.backdropPath,
-        type: MediaType.values.byName(c.type),
-        voteAverage: c.voteAverage,
-      )).toList();
+      return [];
     }
   }
 
-  Future<List<MediaItem>> getPopularAnime() async {
-    final cached = await _isar.discoveryItems
-        .filter()
-        .categoryEqualTo('popular_anime')
-        .findAll();
-
+  Future<List<MediaItem>> getPopularAnime({int page = 1}) async {
     try {
-      final response = await _dio.get('${ApiConstants.jikanBaseUrl}/top/anime');
+      final response = await _dio.get(
+        '${ApiConstants.jikanBaseUrl}/top/anime',
+        queryParameters: {'page': page},
+      );
       final List results = response.data['data'];
-      final items = results.map((json) => MediaMappers.fromJikan(json)).toList();
-
-      await _isar.writeTxn(() async {
-        await _isar.discoveryItems.filter().categoryEqualTo('popular_anime').deleteAll();
-        final discoveryItems = items.map((item) => DiscoveryItem()
-          ..mediaId = item.id
-          ..category = 'popular_anime'
-          ..title = item.title
-          ..overview = item.overview
-          ..posterPath = item.posterPath
-          ..backdropPath = item.backdropPath
-          ..type = item.type.name
-          ..voteAverage = item.voteAverage
-          ..cachedAt = DateTime.now()).toList();
-        await _isar.discoveryItems.putAll(discoveryItems);
-      });
-
-      return items;
+      return results.map((json) => MediaMappers.fromJikan(json)).toList();
     } catch (e) {
-      return cached.map((c) => MediaItem(
-        id: c.mediaId,
-        title: c.title,
-        overview: c.overview,
-        posterPath: c.posterPath,
-        backdropPath: c.backdropPath,
-        type: MediaType.values.byName(c.type),
-        voteAverage: c.voteAverage,
-      )).toList();
+      return [];
     }
   }
 
-  Future<List<MediaItem>> searchMedia(String query) async {
+  Future<List<MediaItem>> searchMedia(String query, {int page = 1}) async {
     if (query.isEmpty) return [];
 
     try {
-      // Search TMDB (Movies and TV) and Jikan (Anime) concurrently
       final futures = [
         _dio.get(
           '${ApiConstants.tmdbBaseUrl}/search/multi',
           queryParameters: {
             'api_key': ApiConstants.tmdbApiKey,
             'query': query,
+            'page': page,
           },
         ),
         _dio.get(
           '${ApiConstants.jikanBaseUrl}/anime',
-          queryParameters: {'q': query},
+          queryParameters: {
+            'q': query,
+            'page': page,
+          },
         ),
       ];
 
       final responses = await Future.wait(futures);
-      
       final List<MediaItem> items = [];
       
-      // Parse TMDB Results
       final tmdbResults = responses[0].data['results'] as List;
       for (var json in tmdbResults) {
         final mediaType = json['media_type'];
@@ -142,14 +82,12 @@ class DiscoveryRepository {
         }
       }
 
-      // Parse Jikan Results
       final jikanResults = responses[1].data['data'] as List;
       for (var json in jikanResults) {
         items.add(MediaMappers.fromJikan(json));
       }
 
-      // Save to recent searches
-      _saveRecentSearch(query);
+      if (page == 1) _saveRecentSearch(query);
 
       return items;
     } catch (e) {
@@ -174,6 +112,46 @@ class DiscoveryRepository {
         .limit(5)
         .findAll();
     return searches.map((s) => s.query).toList();
+  }
+
+  Future<List<CastMember>> getMediaCredits(String mediaId, MediaType type) async {
+    try {
+      if (type == MediaType.anime) {
+        final response = await _dio.get('${ApiConstants.jikanBaseUrl}/anime/$mediaId/characters');
+        final List results = response.data['data'];
+        return results.take(10).map((json) => MediaMappers.castFromJikan(json)).toList();
+      } else {
+        final endpoint = type == MediaType.movie ? 'movie' : 'tv';
+        final response = await _dio.get(
+          '${ApiConstants.tmdbBaseUrl}/$endpoint/$mediaId/credits',
+          queryParameters: {'api_key': ApiConstants.tmdbApiKey},
+        );
+        final List results = response.data['cast'];
+        return results.take(10).map((json) => MediaMappers.castFromTmdb(json)).toList();
+      }
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<MediaItem>> getSimilarMedia(String mediaId, MediaType type) async {
+    try {
+      if (type == MediaType.anime) {
+        final response = await _dio.get('${ApiConstants.jikanBaseUrl}/anime/$mediaId/recommendations');
+        final List results = response.data['data'];
+        return results.take(6).map((json) => MediaMappers.fromJikan(json['entry'])).toList();
+      } else {
+        final endpoint = type == MediaType.movie ? 'movie' : 'tv';
+        final response = await _dio.get(
+          '${ApiConstants.tmdbBaseUrl}/$endpoint/$mediaId/similar',
+          queryParameters: {'api_key': ApiConstants.tmdbApiKey},
+        );
+        final List results = response.data['results'];
+        return results.take(6).map((json) => MediaMappers.fromTmdb(json, type)).toList();
+      }
+    } catch (e) {
+      return [];
+    }
   }
 }
 

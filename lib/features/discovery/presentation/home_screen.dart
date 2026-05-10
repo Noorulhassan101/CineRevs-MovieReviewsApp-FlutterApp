@@ -12,6 +12,11 @@ import 'discovery_controller.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../reviews/presentation/global_feed_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
+import '../../notifications/presentation/notifications_screen.dart';
+import '../../notifications/data/notifications_repository.dart';
+import 'widgets/filter_bar.dart';
+import 'widgets/recent_searches_view.dart';
+import '../../../shared/widgets/glass_container.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -26,33 +31,58 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final List<Widget> _screens = [
     const _DiscoveryView(),
     const GlobalFeedScreen(),
+    const NotificationsScreen(),
     const ProfileScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) => setState(() => _currentIndex = index),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.movie_filter_outlined),
-            activeIcon: Icon(Icons.movie_filter),
-            label: 'DISCOVER',
+    final unreadCountAsync = ref.watch(unreadNotificationsCountProvider);
+    final theme = ref.watch(themeControllerProvider.notifier).currentTheme;
+
+    return Theme(
+      data: theme,
+      child: Scaffold(
+        body: _screens[_currentIndex],
+        bottomNavigationBar: GlassContainer(
+          borderRadius: 0,
+          blur: 20,
+          opacity: 0.1,
+          border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05))),
+          child: BottomNavigationBar(
+            currentIndex: _currentIndex,
+            onTap: (index) => setState(() => _currentIndex = index),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            items: [
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.explore_outlined),
+                activeIcon: Icon(Icons.explore),
+                label: 'DISCOVER',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.stream_outlined),
+                activeIcon: Icon(Icons.stream),
+                label: 'FEED',
+              ),
+              BottomNavigationBarItem(
+                icon: unreadCountAsync.maybeWhen(
+                  data: (count) => count > 0 
+                    ? Badge(label: Text('$count'), child: const Icon(Icons.notifications_outlined))
+                    : const Icon(Icons.notifications_outlined),
+                  orElse: () => const Icon(Icons.notifications_outlined),
+                ),
+                activeIcon: const Icon(Icons.notifications),
+                label: 'ALERTS',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.shield_outlined),
+                activeIcon: Icon(Icons.shield),
+                label: 'VAULT',
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.public_outlined),
-            activeIcon: Icon(Icons.public),
-            label: 'COMMUNITY',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'VAULT',
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -76,70 +106,81 @@ class _DiscoveryViewState extends ConsumerState<_DiscoveryView> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = ref.watch(themeControllerProvider.notifier).currentTheme;
+    final themeMode = ref.watch(themeControllerProvider);
+    
     final trendingMoviesAsync = ref.watch(trendingMoviesProvider);
     final popularAnimeAsync = ref.watch(popularAnimeProvider);
+    final forYouAsync = ref.watch(forYouRecommendationsProvider);
     final searchQuery = ref.watch(searchQueryProvider);
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
-          // Background Film Grain (SVG or subtle overlay could go here)
-          Positioned.fill(
-            child: Container(
-              color: AppColors.background,
+          // Dynamic Background Gradient
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 500),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  theme.scaffoldBackgroundColor,
+                  theme.colorScheme.surface.withOpacity(0.8),
+                ],
+              ),
             ),
           ),
           
           CustomScrollView(
             slivers: [
-              // Atmospheric App Bar
               SliverAppBar(
                 floating: true,
-                expandedHeight: 120,
+                expandedHeight: 140,
                 backgroundColor: Colors.transparent,
                 actions: [
                   IconButton(
-                    icon: const Icon(Icons.palette, color: AppColors.primaryAccent),
+                    icon: Icon(Icons.style, color: theme.colorScheme.primary),
                     onPressed: () => _showThemePicker(context),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.logout, color: Colors.white54),
+                    icon: const Icon(Icons.power_settings_new, color: Colors.white54),
                     onPressed: () => ref.read(authRepositoryProvider).signOut(),
                   ),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
                   centerTitle: true,
                   title: Text(
-                    'CINEVAULT',
-                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                          letterSpacing: 4,
-                          color: AppColors.primaryAccent,
+                    'ZENTHRA',
+                    style: theme.textTheme.displayMedium?.copyWith(
+                          color: theme.colorScheme.primary,
+                          shadows: [
+                            Shadow(
+                              color: theme.colorScheme.primary.withOpacity(0.5),
+                              blurRadius: 10,
+                            ),
+                          ],
                         ),
                   ),
                 ),
               ),
               
-              // Genre Chips
+              // Genre Filters with Futuristic Design
               SliverToBoxAdapter(
                 child: SizedBox(
-                  height: 50,
+                  height: 60,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     children: [
-                      'ALL',
-                      'ACTION',
-                      'COMEDY',
-                      'HORROR',
-                      'ANIME',
-                      'DRAMA',
-                      'SCI-FI',
+                      'ALL', 'ACTION', 'COMEDY', 'HORROR', 'ANIME', 'DRAMA', 'SCI-FI',
                     ].map((genre) {
                       final isSelected = (genre == 'ALL' && searchQuery.isEmpty) || 
                                          searchQuery.toUpperCase() == genre;
                       return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: ChoiceChip(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: FilterChip(
                           label: Text(genre),
                           selected: isSelected,
                           onSelected: (selected) {
@@ -147,12 +188,16 @@ class _DiscoveryViewState extends ConsumerState<_DiscoveryView> {
                               ref.read(searchQueryProvider.notifier).update(genre == 'ALL' ? '' : genre.toLowerCase());
                             }
                           },
-                          backgroundColor: AppColors.surface,
-                          selectedColor: AppColors.primaryAccent,
+                          backgroundColor: Colors.transparent,
+                          selectedColor: theme.colorScheme.primary.withOpacity(0.2),
+                          side: BorderSide(
+                            color: isSelected ? theme.colorScheme.primary : Colors.white12,
+                          ),
                           labelStyle: TextStyle(
-                            color: isSelected ? Colors.black : Colors.white70,
-                            fontSize: 12,
+                            color: isSelected ? theme.colorScheme.primary : Colors.white60,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
                           ),
                         ),
                       );
@@ -161,40 +206,63 @@ class _DiscoveryViewState extends ConsumerState<_DiscoveryView> {
                 ),
               ),
 
-              // Search Bar
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: FilterBar(),
+                ),
+              ),
+
+              // Search Bar with Glow
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: TextField(
-                    onChanged: (value) {
-                      _debouncer.run(() {
-                        ref.read(searchQueryProvider.notifier).update(value);
-                      });
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Search movies or anime...',
-                      prefixIcon: const Icon(Icons.search, color: AppColors.primaryAccent),
-                      filled: true,
-                      fillColor: AppColors.surface,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none,
+                  padding: const EdgeInsets.all(16.0),
+                  child: GlassContainer(
+                    borderRadius: 30,
+                    opacity: 0.05,
+                    child: TextField(
+                      onChanged: (value) {
+                        _debouncer.run(() {
+                          ref.read(searchQueryProvider.notifier).update(value);
+                        });
+                      },
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'SCANNING FOR MEDIA...',
+                        hintStyle: const TextStyle(color: Colors.white24, fontSize: 12),
+                        prefixIcon: Icon(Icons.radar, color: theme.colorScheme.primary),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                       ),
                     ),
                   ),
                 ),
               ),
 
-              if (searchQuery.isEmpty) ...[
-                // Trending Movies Section
+              if (searchQuery.isEmpty)
+                const SliverToBoxAdapter(
+                  child: RecentSearchesView(),
+                ),
+
+              if (searchQuery.isEmpty && !ref.watch(discoveryFilterProvider).isApplied) ...[
+                forYouAsync.when(
+                  data: (items) => items.isNotEmpty 
+                    ? SliverToBoxAdapter(
+                        child: _MediaSection(
+                          title: 'FOR YOU',
+                          itemsAsync: AsyncValue.data(items),
+                        ),
+                      )
+                    : const SliverToBoxAdapter(child: SizedBox.shrink()),
+                  loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                  error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                ),
                 SliverToBoxAdapter(
                   child: _MediaSection(
                     title: 'TRENDING MOVIES',
                     itemsAsync: trendingMoviesAsync,
                   ),
                 ),
-
-                // Popular Anime Section
                 SliverToBoxAdapter(
                   child: _MediaSection(
                     title: 'POPULAR ANIME',
@@ -202,9 +270,10 @@ class _DiscoveryViewState extends ConsumerState<_DiscoveryView> {
                   ),
                 ),
               ] else ...[
-                // Search Results Grid
                 _SearchResultsGrid(),
               ],
+              
+              const SliverToBoxAdapter(child: SizedBox(height: 100)),
             ],
           ),
         ],
@@ -215,34 +284,24 @@ class _DiscoveryViewState extends ConsumerState<_DiscoveryView> {
   void _showThemePicker(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('CHOOSE YOUR ATMOSPHERE', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 24),
-            _ThemeOption(
-              title: 'MIDNIGHT',
-              subtitle: 'Deep Teal & Amber (Classic)',
-              mode: AppThemeMode.midnight,
-              color: AppColors.background,
-            ),
-            _ThemeOption(
-              title: 'OBSIDIAN',
-              subtitle: 'Pure Black & Cyan (High Contrast)',
-              mode: AppThemeMode.obsidian,
-              color: Colors.black,
-            ),
-            _ThemeOption(
-              title: 'NEBULA',
-              subtitle: 'Space Purple & Pink (Vibrant)',
-              mode: AppThemeMode.nebula,
-              color: const Color(0xFF1A0B2E),
-            ),
-          ],
+      backgroundColor: Colors.transparent,
+      builder: (context) => GlassContainer(
+        borderRadius: 30,
+        blur: 30,
+        opacity: 0.1,
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('SELECT ATMOSPHERE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 2)),
+              const SizedBox(height: 24),
+              _ThemeOption(title: 'ZENITH', mode: AppThemeMode.light, color: Colors.white),
+              _ThemeOption(title: 'MIDNIGHT', mode: AppThemeMode.midnight, color: AppColors.background),
+              _ThemeOption(title: 'OBSIDIAN', mode: AppThemeMode.obsidian, color: Colors.black),
+              _ThemeOption(title: 'NEBULA', mode: AppThemeMode.nebula, color: AppColors.nebulaBackground),
+            ],
+          ),
         ),
       ),
     );
@@ -251,21 +310,16 @@ class _DiscoveryViewState extends ConsumerState<_DiscoveryView> {
 
 class _ThemeOption extends ConsumerWidget {
   final String title;
-  final String subtitle;
   final AppThemeMode mode;
   final Color color;
 
-  const _ThemeOption({
-    required this.title,
-    required this.subtitle,
-    required this.mode,
-    required this.color,
-  });
+  const _ThemeOption({required this.title, required this.mode, required this.color});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentMode = ref.watch(themeControllerProvider);
     final isSelected = currentMode == mode;
+    final theme = ref.watch(themeControllerProvider.notifier).currentTheme;
 
     return ListTile(
       onTap: () {
@@ -273,17 +327,16 @@ class _ThemeOption extends ConsumerWidget {
         Navigator.pop(context);
       },
       leading: Container(
-        width: 40,
-        height: 40,
+        width: 24,
+        height: 24,
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
-          border: Border.all(color: isSelected ? AppColors.primaryAccent : Colors.white24, width: 2),
+          border: Border.all(color: isSelected ? theme.colorScheme.primary : Colors.white24, width: 2),
         ),
       ),
-      title: Text(title, style: TextStyle(color: isSelected ? AppColors.primaryAccent : Colors.white, fontWeight: FontWeight.bold)),
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
-      trailing: isSelected ? const Icon(Icons.check_circle, color: AppColors.primaryAccent) : null,
+      title: Text(title, style: TextStyle(color: isSelected ? theme.colorScheme.primary : Colors.white70, fontWeight: FontWeight.bold, fontSize: 12)),
+      trailing: isSelected ? Icon(Icons.check_circle, color: theme.colorScheme.primary, size: 20) : null,
     );
   }
 }
@@ -300,10 +353,10 @@ class _MediaSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24),
           child: Text(
             title,
-            style: Theme.of(context).textTheme.titleLarge,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 2),
           ),
         ),
         SizedBox(
@@ -315,13 +368,11 @@ class _MediaSection extends StatelessWidget {
               itemCount: items.length,
               itemBuilder: (context, index) => MediaCard(
                 item: items[index],
-                onTap: () {
-                  context.go('/details', extra: items[index]);
-                },
+                onTap: () => context.go('/details', extra: items[index]),
               ),
             ),
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, s) => const Center(child: Text('Error loading data')),
+            error: (e, s) => const SizedBox.shrink(),
           ),
         ),
       ],
@@ -333,7 +384,6 @@ class _SearchResultsGrid extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final resultsAsync = ref.watch(searchResultsProvider);
-
     final screenWidth = MediaQuery.of(context).size.width;
     final crossAxisCount = screenWidth > 900 ? 4 : (screenWidth > 600 ? 3 : 2);
 
@@ -350,20 +400,14 @@ class _SearchResultsGrid extends ConsumerWidget {
           delegate: SliverChildBuilderDelegate(
             (context, index) => MediaCard(
               item: items[index],
-              onTap: () {
-                context.go('/details', extra: items[index]);
-              },
+              onTap: () => context.go('/details', extra: items[index]),
             ),
             childCount: items.length,
           ),
         ),
       ),
-      loading: () => const SliverToBoxAdapter(
-        child: Center(child: CircularProgressIndicator()),
-      ),
-      error: (e, s) => const SliverToBoxAdapter(
-        child: Center(child: Text('Error searching')),
-      ),
+      loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
+      error: (e, s) => const SliverToBoxAdapter(child: Center(child: Text('ERROR SCANNING'))),
     );
   }
 }

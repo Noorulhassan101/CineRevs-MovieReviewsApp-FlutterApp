@@ -4,7 +4,7 @@ import 'app_theme.dart';
 
 part 'theme_controller.g.dart';
 
-enum AppThemeMode { midnight, obsidian, nebula }
+enum AppThemeMode { light, midnight, obsidian, nebula }
 
 @riverpod
 class ThemeController extends _$ThemeController {
@@ -15,6 +15,8 @@ class ThemeController extends _$ThemeController {
 
   ThemeData get currentTheme {
     switch (state) {
+      case AppThemeMode.light:
+        return AppTheme.lightTheme;
       case AppThemeMode.midnight:
         return AppTheme.darkTheme;
       case AppThemeMode.obsidian:
@@ -23,4 +25,6 @@ class ThemeController extends _$ThemeController {
         return AppTheme.nebulaTheme;
     }
   }
+
+  bool get isDarkMode => state != AppThemeMode.light;
 }

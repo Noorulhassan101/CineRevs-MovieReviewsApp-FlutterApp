@@ -15,6 +15,12 @@ _$ReviewImpl _$$ReviewImplFromJson(Map<String, dynamic> json) => _$ReviewImpl(
       rating: (json['rating'] as num).toDouble(),
       comment: json['comment'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
+      likesCount: (json['likesCount'] as num?)?.toInt() ?? 0,
+      likedBy: (json['likedBy'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
+      commentsCount: (json['commentsCount'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$$ReviewImplToJson(_$ReviewImpl instance) =>
@@ -27,4 +33,7 @@ Map<String, dynamic> _$$ReviewImplToJson(_$ReviewImpl instance) =>
       'rating': instance.rating,
       'comment': instance.comment,
       'createdAt': instance.createdAt.toIso8601String(),
+      'likesCount': instance.likesCount,
+      'likedBy': instance.likedBy,
+      'commentsCount': instance.commentsCount,
     };

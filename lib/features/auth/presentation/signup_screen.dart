@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../data/auth_repository.dart';
+import '../../../shared/widgets/glass_container.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -28,7 +29,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   Future<void> _signup() async {
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Passwords do not match')),
+        const SnackBar(content: Text('ERR: ACCESS KEYS DO NOT MATCH')),
       );
       return;
     }
@@ -43,7 +44,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Signup failed: ${e.toString()}')),
+          SnackBar(content: Text('REGISTRATION FAILED: ${e.toString()}')),
         );
       }
     } finally {
@@ -55,71 +56,113 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primaryAccent),
+          icon: const Icon(Icons.chevron_left, color: AppColors.secondaryAccent),
           onPressed: () => context.pop(),
         ),
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'JOIN THE VAULT',
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      color: AppColors.primaryAccent,
+      body: Stack(
+        children: [
+          Positioned(
+            bottom: -50,
+            right: -50,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.nebulaAccent.withOpacity(0.05),
+              ),
+            ),
+          ),
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(32.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'INITIALIZE CITIZENSHIP',
+                    style: TextStyle(
+                      color: AppColors.secondaryAccent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
                       letterSpacing: 4,
                     ),
-              ),
-              const SizedBox(height: 48),
-              _buildTextField(
-                controller: _emailController,
-                label: 'EMAIL',
-                icon: Icons.email_outlined,
-              ),
-              const SizedBox(height: 16),
-              _buildTextField(
-                controller: _passwordController,
-                label: 'PASSWORD',
-                icon: Icons.lock_outline,
-                isPassword: true,
-              ),
-              const SizedBox(height: 16),
-              _buildTextField(
-                controller: _confirmPasswordController,
-                label: 'CONFIRM PASSWORD',
-                icon: Icons.lock_reset,
-                isPassword: true,
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _signup,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryAccent,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'ZENTHRA',
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                          color: Colors.white,
+                          letterSpacing: 8,
+                          fontWeight: FontWeight.w900,
+                        ),
+                  ),
+                  const SizedBox(height: 48),
+                  
+                  GlassContainer(
+                    opacity: 0.05,
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        children: [
+                          _buildTextField(
+                            controller: _emailController,
+                            label: 'REGISTER_EMAIL',
+                            icon: Icons.alternate_email,
+                          ),
+                          const SizedBox(height: 20),
+                          _buildTextField(
+                            controller: _passwordController,
+                            label: 'DEFINE_ACCESS_KEY',
+                            icon: Icons.lock_outline,
+                            isPassword: true,
+                          ),
+                          const SizedBox(height: 20),
+                          _buildTextField(
+                            controller: _confirmPasswordController,
+                            label: 'VERIFY_ACCESS_KEY',
+                            icon: Icons.security_outlined,
+                            isPassword: true,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.black)
-                      : const Text(
-                          'CREATE ACCOUNT',
-                          style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2),
+                  
+                  const SizedBox(height: 40),
+                  
+                  SizedBox(
+                    width: double.infinity,
+                    height: 60,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _signup,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.secondaryAccent,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                ),
+                        elevation: 0,
+                      ),
+                      child: _isLoading
+                          ? const CircularProgressIndicator(color: Colors.black)
+                          : const Text(
+                              'GENERATE IDENTITY',
+                              style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2),
+                            ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -133,20 +176,19 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     return TextField(
       controller: controller,
       obscureText: isPassword,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: Colors.white, fontSize: 14),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: AppColors.textSecondary),
-        prefixIcon: Icon(icon, color: AppColors.primaryAccent),
-        filled: true,
-        fillColor: AppColors.surface,
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: AppColors.surface),
-          borderRadius: BorderRadius.circular(8),
+        labelStyle: const TextStyle(color: Colors.white24, fontSize: 12, letterSpacing: 1),
+        prefixIcon: Icon(icon, color: AppColors.secondaryAccent, size: 20),
+        border: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.white12),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: AppColors.primaryAccent),
-          borderRadius: BorderRadius.circular(8),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.white12),
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: AppColors.secondaryAccent),
         ),
       ),
     );

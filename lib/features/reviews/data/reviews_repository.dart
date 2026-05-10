@@ -2,7 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../auth/data/auth_repository.dart';
+import '../../profile/data/social_repository.dart';
+import '../../notifications/data/notifications_repository.dart';
+import '../../notifications/domain/notification_model.dart';
 import '../domain/review_model.dart';
+import '../domain/comment_model.dart';
 
 part 'reviews_repository.g.dart';
 
@@ -42,7 +46,6 @@ class ReviewsRepository {
     return total / snapshot.docs.length;
   }
 
-  /// Stream of reviews authored by a specific user (for Profile screen).
   Stream<List<Review>> getReviewsByUser(String userId) {
     return _firestore
         .collection('reviews')
@@ -54,12 +57,120 @@ class ReviewsRepository {
             .toList());
   }
 
-  /// Stream of all reviews globally (for Community Feed).
   Stream<List<Review>> watchAllReviews({int limit = 50}) {
     return _firestore
         .collection('reviews')
         .orderBy('createdAt', descending: true)
         .limit(limit)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => Review.fromJson(doc.data()))
+            .toList());
+  }
+
+  Stream<List<Review>> getReviewsByFollowing(List<String> followingIds, {int limit = 50}) {
+    if (followingIds.isEmpty) return Stream.value([]);
+    
+    return _firestore
+        .collection('reviews')
+        .where('userId', whereIn: followingIds)
+        .orderBy('createdAt', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => Review.fromJson(doc.data()))
+            .toList());
+  }
+
+  Future<void> toggleLikeReview({
+    required String reviewId,
+    required String userId,
+    required String userName,
+    required NotificationsRepository notificationsRepo,
+  }) async {
+    final docRef = _firestore.collection('reviews').doc(reviewId);
+    final doc = await docRef.get();
+    if (!doc.exists) return;
+
+    final data = doc.data()!;
+    final List<String> likedBy = List<String>.from(data['likedBy'] ?? []);
+    final isLiked = likedBy.contains(userId);
+    final authorId = data['userId'] as String;
+
+    if (isLiked) {
+      await docRef.update({
+        'likesCount': FieldValue.increment(-1),
+        'likedBy': FieldValue.arrayRemove([userId]),
+      });
+    } else {
+      await docRef.update({
+        'likesCount': FieldValue.increment(1),
+        'likedBy': FieldValue.arrayUnion([userId]),
+      });
+
+      if (userId != authorId) {
+        final notification = NotificationItem(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          fromUserId: userId,
+          fromUserName: userName,
+          type: 'like',
+          targetId: reviewId,
+          createdAt: DateTime.now(),
+        );
+        await notificationsRepo.addNotification(authorId, notification);
+      }
+    }
+  }
+
+  Future<void> addComment({
+    required String reviewId,
+    required Comment comment,
+    required String authorId,
+    required NotificationsRepository notificationsRepo,
+  }) async {
+    await _firestore
+        .collection('reviews')
+        .doc(reviewId)
+        .collection('comments')
+        .doc(comment.id)
+        .set(comment.toJson());
+    
+    await _firestore.collection('reviews').doc(reviewId).update({
+      'commentsCount': FieldValue.increment(1),
+    });
+
+    if (comment.userId != authorId) {
+      final notification = NotificationItem(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        fromUserId: comment.userId,
+        fromUserName: comment.userName,
+        type: 'comment',
+        targetId: reviewId,
+        createdAt: DateTime.now(),
+      );
+      await notificationsRepo.addNotification(authorId, notification);
+    }
+  }
+
+  Stream<List<Comment>> watchComments(String reviewId) {
+    return _firestore
+        .collection('reviews')
+        .doc(reviewId)
+        .collection('comments')
+        .orderBy('createdAt', descending: false)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => Comment.fromJson(doc.data()))
+            .toList());
+  }
+
+  Stream<List<Review>> getFollowedUserReviewsForMedia(String mediaId, List<String> followingIds) {
+    if (followingIds.isEmpty) return Stream.value([]);
+    
+    return _firestore
+        .collection('reviews')
+        .where('mediaId', isEqualTo: mediaId)
+        .where('userId', whereIn: followingIds)
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => Review.fromJson(doc.data()))
@@ -82,16 +193,34 @@ Future<double> averageRating(AverageRatingRef ref, String mediaId) {
   return ref.watch(reviewsRepositoryProvider).getAverageRating(mediaId);
 }
 
-// ── Additional Manual Providers (no build_runner needed) ──────────────
-
-/// Reviews written by the currently logged-in user.
 final userReviewsProvider = StreamProvider<List<Review>>((ref) {
   final user = ref.watch(authRepositoryProvider).currentUser;
   if (user == null) return Stream.value([]);
   return ref.watch(reviewsRepositoryProvider).getReviewsByUser(user.uid);
 });
 
-/// Global feed of all reviews across the platform.
 final globalReviewsProvider = StreamProvider<List<Review>>((ref) {
   return ref.watch(reviewsRepositoryProvider).watchAllReviews();
+});
+
+final followingReviewsProvider = StreamProvider<List<Review>>((ref) {
+  final followingIdsAsync = ref.watch(followingIdsProvider);
+  return followingIdsAsync.when(
+    data: (ids) => ref.watch(reviewsRepositoryProvider).getReviewsByFollowing(ids),
+    loading: () => const Stream.empty(),
+    error: (_, __) => const Stream.empty(),
+  );
+});
+
+final reviewCommentsProvider = StreamProvider.family<List<Comment>, String>((ref, reviewId) {
+  return ref.watch(reviewsRepositoryProvider).watchComments(reviewId);
+});
+
+final followedMediaReviewsProvider = StreamProvider.family<List<Review>, String>((ref, mediaId) {
+  final followingIdsAsync = ref.watch(followingIdsProvider);
+  return followingIdsAsync.when(
+    data: (ids) => ref.watch(reviewsRepositoryProvider).getFollowedUserReviewsForMedia(mediaId, ids),
+    loading: () => const Stream.empty(),
+    error: (_, __) => const Stream.empty(),
+  );
 });

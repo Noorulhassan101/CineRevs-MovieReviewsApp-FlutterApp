@@ -14,44 +14,51 @@ class AppTheme {
         surface: AppColors.surface,
         background: AppColors.background,
       ),
-      textTheme: TextTheme(
-        displayLarge: GoogleFonts.oswald(
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
-        ),
-        displayMedium: GoogleFonts.oswald(
-          fontSize: 28,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
-        ),
-        titleLarge: GoogleFonts.oswald(
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
-        ),
-        bodyLarge: GoogleFonts.inter(
-          fontSize: 16,
-          color: AppColors.textPrimary,
-        ),
-        bodyMedium: GoogleFonts.inter(
-          fontSize: 14,
-          color: AppColors.textSecondary,
-        ),
-      ),
-      appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.background,
+      textTheme: _getTextTheme(AppColors.textPrimary, AppColors.textSecondary),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        titleTextStyle: GoogleFonts.oswald(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
-        ),
+        centerTitle: true,
+      ),
+      cardTheme: CardThemeData(
+        color: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 0,
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.surface,
         selectedItemColor: AppColors.primaryAccent,
         unselectedItemColor: AppColors.textSecondary,
+        type: BottomNavigationBarType.fixed,
+        elevation: 0,
+      ),
+    );
+  }
+
+  static ThemeData get lightTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      scaffoldBackgroundColor: AppColors.lightBackground,
+      colorScheme: const ColorScheme.light(
+        primary: AppColors.lightPrimary,
+        secondary: AppColors.lightPrimary,
+        surface: AppColors.lightSurface,
+        background: AppColors.lightBackground,
+      ),
+      textTheme: _getTextTheme(AppColors.lightTextPrimary, AppColors.lightTextSecondary),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: IconThemeData(color: AppColors.lightTextPrimary),
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: AppColors.lightSurface,
+        selectedItemColor: AppColors.lightPrimary,
+        unselectedItemColor: AppColors.lightTextSecondary,
+        type: BottomNavigationBarType.fixed,
+        elevation: 8,
       ),
     );
   }
@@ -59,14 +66,14 @@ class AppTheme {
   static ThemeData get obsidianTheme {
     return darkTheme.copyWith(
       scaffoldBackgroundColor: AppColors.obsidianBackground,
-      colorScheme: const ColorScheme.dark(
+      colorScheme: darkTheme.colorScheme.copyWith(
         primary: AppColors.obsidianAccent,
-        secondary: AppColors.secondaryAccent,
         surface: AppColors.obsidianSurface,
         background: AppColors.obsidianBackground,
       ),
-      appBarTheme: darkTheme.appBarTheme.copyWith(
-        backgroundColor: AppColors.obsidianBackground,
+      bottomNavigationBarTheme: darkTheme.bottomNavigationBarTheme.copyWith(
+        backgroundColor: AppColors.obsidianSurface,
+        selectedItemColor: AppColors.obsidianAccent,
       ),
     );
   }
@@ -74,14 +81,50 @@ class AppTheme {
   static ThemeData get nebulaTheme {
     return darkTheme.copyWith(
       scaffoldBackgroundColor: AppColors.nebulaBackground,
-      colorScheme: const ColorScheme.dark(
+      colorScheme: darkTheme.colorScheme.copyWith(
         primary: AppColors.nebulaAccent,
-        secondary: AppColors.secondaryAccent,
         surface: AppColors.nebulaSurface,
         background: AppColors.nebulaBackground,
       ),
-      appBarTheme: darkTheme.appBarTheme.copyWith(
-        backgroundColor: AppColors.nebulaBackground,
+      bottomNavigationBarTheme: darkTheme.bottomNavigationBarTheme.copyWith(
+        backgroundColor: AppColors.nebulaSurface,
+        selectedItemColor: AppColors.nebulaAccent,
+      ),
+    );
+  }
+
+  static TextTheme _getTextTheme(Color primary, Color secondary) {
+    return TextTheme(
+      displayLarge: GoogleFonts.outfit(
+        fontSize: 32,
+        fontWeight: FontWeight.bold,
+        color: primary,
+        letterSpacing: -0.5,
+      ),
+      displayMedium: GoogleFonts.outfit(
+        fontSize: 28,
+        fontWeight: FontWeight.bold,
+        color: primary,
+        letterSpacing: 2,
+      ),
+      titleLarge: GoogleFonts.outfit(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: primary,
+      ),
+      bodyLarge: GoogleFonts.inter(
+        fontSize: 16,
+        color: primary,
+      ),
+      bodyMedium: GoogleFonts.inter(
+        fontSize: 14,
+        color: secondary,
+      ),
+      labelSmall: GoogleFonts.inter(
+        fontSize: 10,
+        fontWeight: FontWeight.bold,
+        color: secondary,
+        letterSpacing: 1.5,
       ),
     );
   }

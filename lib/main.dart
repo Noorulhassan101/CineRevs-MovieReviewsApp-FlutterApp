@@ -17,6 +17,7 @@ import 'features/favorites/data/favorites_repository.dart';
 import 'features/discovery/domain/discovery_item.dart';
 import 'features/discovery/domain/recent_search.dart';
 import 'core/network/isar_provider.dart';
+import 'features/profile/presentation/public_profile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +35,7 @@ void main() async {
         isarProvider.overrideWithValue(isar),
         favoritesRepositoryProvider.overrideWithValue(FavoritesRepository(isar)),
       ],
-      child: const CineVaultApp(),
+      child: const ZenthraApp(),
     ),
   );
 }
@@ -70,19 +71,28 @@ final _router = GoRouter(
             return MediaDetailsScreen(item: item);
           },
         ),
+        GoRoute(
+          path: 'profile/:userId',
+          builder: (context, state) {
+            final userId = state.pathParameters['userId']!;
+            return PublicProfileScreen(userId: userId);
+          },
+        ),
       ],
     ),
   ],
 );
 
-class CineVaultApp extends ConsumerWidget {
-  const CineVaultApp({super.key});
+class ZenthraApp extends ConsumerWidget {
+  const ZenthraApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeControllerProvider);
     final theme = ref.watch(themeControllerProvider.notifier).currentTheme;
+    
     return MaterialApp.router(
-      title: 'CineVault',
+      title: 'Zenthra',
       debugShowCheckedModeBanner: false,
       theme: theme,
       routerConfig: _router,

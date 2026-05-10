@@ -29,6 +29,9 @@ mixin _$Review {
   double get rating => throw _privateConstructorUsedError; // 1.0 to 10.0
   String get comment => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
+  int get likesCount => throw _privateConstructorUsedError;
+  List<String> get likedBy => throw _privateConstructorUsedError;
+  int get commentsCount => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -48,7 +51,10 @@ abstract class $ReviewCopyWith<$Res> {
       String mediaType,
       double rating,
       String comment,
-      DateTime createdAt});
+      DateTime createdAt,
+      int likesCount,
+      List<String> likedBy,
+      int commentsCount});
 }
 
 /// @nodoc
@@ -72,6 +78,9 @@ class _$ReviewCopyWithImpl<$Res, $Val extends Review>
     Object? rating = null,
     Object? comment = null,
     Object? createdAt = null,
+    Object? likesCount = null,
+    Object? likedBy = null,
+    Object? commentsCount = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -106,6 +115,18 @@ class _$ReviewCopyWithImpl<$Res, $Val extends Review>
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      likesCount: null == likesCount
+          ? _value.likesCount
+          : likesCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      likedBy: null == likedBy
+          ? _value.likedBy
+          : likedBy // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      commentsCount: null == commentsCount
+          ? _value.commentsCount
+          : commentsCount // ignore: cast_nullable_to_non_nullable
+              as int,
     ) as $Val);
   }
 }
@@ -125,7 +146,10 @@ abstract class _$$ReviewImplCopyWith<$Res> implements $ReviewCopyWith<$Res> {
       String mediaType,
       double rating,
       String comment,
-      DateTime createdAt});
+      DateTime createdAt,
+      int likesCount,
+      List<String> likedBy,
+      int commentsCount});
 }
 
 /// @nodoc
@@ -147,6 +171,9 @@ class __$$ReviewImplCopyWithImpl<$Res>
     Object? rating = null,
     Object? comment = null,
     Object? createdAt = null,
+    Object? likesCount = null,
+    Object? likedBy = null,
+    Object? commentsCount = null,
   }) {
     return _then(_$ReviewImpl(
       id: null == id
@@ -181,6 +208,18 @@ class __$$ReviewImplCopyWithImpl<$Res>
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      likesCount: null == likesCount
+          ? _value.likesCount
+          : likesCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      likedBy: null == likedBy
+          ? _value._likedBy
+          : likedBy // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      commentsCount: null == commentsCount
+          ? _value.commentsCount
+          : commentsCount // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -196,7 +235,11 @@ class _$ReviewImpl implements _Review {
       required this.mediaType,
       required this.rating,
       required this.comment,
-      required this.createdAt});
+      required this.createdAt,
+      this.likesCount = 0,
+      final List<String> likedBy = const [],
+      this.commentsCount = 0})
+      : _likedBy = likedBy;
 
   factory _$ReviewImpl.fromJson(Map<String, dynamic> json) =>
       _$$ReviewImplFromJson(json);
@@ -219,10 +262,25 @@ class _$ReviewImpl implements _Review {
   final String comment;
   @override
   final DateTime createdAt;
+  @override
+  @JsonKey()
+  final int likesCount;
+  final List<String> _likedBy;
+  @override
+  @JsonKey()
+  List<String> get likedBy {
+    if (_likedBy is EqualUnmodifiableListView) return _likedBy;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_likedBy);
+  }
+
+  @override
+  @JsonKey()
+  final int commentsCount;
 
   @override
   String toString() {
-    return 'Review(id: $id, userId: $userId, userName: $userName, mediaId: $mediaId, mediaType: $mediaType, rating: $rating, comment: $comment, createdAt: $createdAt)';
+    return 'Review(id: $id, userId: $userId, userName: $userName, mediaId: $mediaId, mediaType: $mediaType, rating: $rating, comment: $comment, createdAt: $createdAt, likesCount: $likesCount, likedBy: $likedBy, commentsCount: $commentsCount)';
   }
 
   @override
@@ -240,13 +298,29 @@ class _$ReviewImpl implements _Review {
             (identical(other.rating, rating) || other.rating == rating) &&
             (identical(other.comment, comment) || other.comment == comment) &&
             (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+                other.createdAt == createdAt) &&
+            (identical(other.likesCount, likesCount) ||
+                other.likesCount == likesCount) &&
+            const DeepCollectionEquality().equals(other._likedBy, _likedBy) &&
+            (identical(other.commentsCount, commentsCount) ||
+                other.commentsCount == commentsCount));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, id, userId, userName, mediaId,
-      mediaType, rating, comment, createdAt);
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      userId,
+      userName,
+      mediaId,
+      mediaType,
+      rating,
+      comment,
+      createdAt,
+      likesCount,
+      const DeepCollectionEquality().hash(_likedBy),
+      commentsCount);
 
   @JsonKey(ignore: true)
   @override
@@ -271,7 +345,10 @@ abstract class _Review implements Review {
       required final String mediaType,
       required final double rating,
       required final String comment,
-      required final DateTime createdAt}) = _$ReviewImpl;
+      required final DateTime createdAt,
+      final int likesCount,
+      final List<String> likedBy,
+      final int commentsCount}) = _$ReviewImpl;
 
   factory _Review.fromJson(Map<String, dynamic> json) = _$ReviewImpl.fromJson;
 
@@ -291,6 +368,12 @@ abstract class _Review implements Review {
   String get comment;
   @override
   DateTime get createdAt;
+  @override
+  int get likesCount;
+  @override
+  List<String> get likedBy;
+  @override
+  int get commentsCount;
   @override
   @JsonKey(ignore: true)
   _$$ReviewImplCopyWith<_$ReviewImpl> get copyWith =>
