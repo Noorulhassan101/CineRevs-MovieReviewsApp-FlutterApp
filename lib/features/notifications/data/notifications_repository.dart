@@ -29,9 +29,13 @@ class NotificationsRepository {
         .orderBy('createdAt', descending: true)
         .limit(30)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => NotificationItem.fromJson(doc.data()))
-            .toList());
+        .map((snapshot) => snapshot.docs.map((doc) {
+              final data = doc.data();
+              if (data['createdAt'] is Timestamp) {
+                data['createdAt'] = (data['createdAt'] as Timestamp).toDate().toIso8601String();
+              }
+              return NotificationItem.fromJson(data);
+            }).toList());
   }
 
   Future<void> markAsRead(String userId, String notificationId) async {

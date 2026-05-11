@@ -1,3 +1,4 @@
+import 'package:zenthra/shared/utils/adaptive_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,15 +10,30 @@ import '../../../profile/data/social_repository.dart';
 import '../../../notifications/data/notifications_repository.dart';
 import 'comment_section.dart';
 
-class ReviewCard extends ConsumerWidget {
+class ReviewCard extends ConsumerStatefulWidget {
   final Review review;
-
   const ReviewCard({super.key, required this.review});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ReviewCard> createState() => _ReviewCardState();
+}
+
+class _ReviewCardState extends ConsumerState<ReviewCard> {
+  late bool _isLiked;
+  late int _likesCount;
+
+  @override
+  void initState() {
+    super.initState();
+    _isLiked = false; // Will be set in build
+    _likesCount = widget.review.likesCount;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final user = ref.watch(authRepositoryProvider).currentUser;
-    final isLiked = user != null && review.likedBy.contains(user.uid);
+    _isLiked = user != null && widget.review.likedBy.contains(user.uid);
+    _likesCount = widget.review.likesCount;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -25,7 +41,7 @@ class ReviewCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: context.adaptiveWhite.withOpacity(0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,9 +50,9 @@ class ReviewCard extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               GestureDetector(
-                onTap: () => context.push('/profile/${review.userId}'),
+                onTap: () => context.push('/profile/${widget.review.userId}'),
                 child: Text(
-                  review.userName.toUpperCase(),
+                  widget.review.userName.toUpperCase(),
                   style: const TextStyle(
                     color: AppColors.primaryAccent,
                     fontWeight: FontWeight.bold,
@@ -57,7 +73,7 @@ class ReviewCard extends ConsumerWidget {
                     const Icon(Icons.star, color: Colors.amber, size: 14),
                     const SizedBox(width: 4),
                     Text(
-                      review.rating.toStringAsFixed(1),
+                      widget.review.rating.toStringAsFixed(1),
                       style: const TextStyle(
                         color: Colors.amber,
                         fontWeight: FontWeight.bold,
@@ -68,26 +84,34 @@ class ReviewCard extends ConsumerWidget {
               ),
             ],
           ),
+          if (widget.review.communityName != 'Global')
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                'IN ${widget.review.communityName.toUpperCase()}',
+                style: const TextStyle(color: AppColors.secondaryAccent, fontSize: 8, fontWeight: FontWeight.bold, letterSpacing: 1),
+              ),
+            ),
           const SizedBox(height: 8),
           Text(
-            review.comment,
-            style: const TextStyle(color: Colors.white70, height: 1.4),
+            widget.review.comment,
+            style: TextStyle(color: context.adaptiveWhite70, height: 1.4),
           ),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                _formatDate(review.createdAt),
-                style: const TextStyle(color: Colors.white24, fontSize: 10),
+                _formatDate(widget.review.createdAt),
+                style: TextStyle(color: context.adaptiveWhite70, height: 1.4),
               ),
               Row(
                 children: [
                   // Likes
                   Text(
-                    '${review.likesCount}',
+                    '$_likesCount',
                     style: TextStyle(
-                      color: isLiked ? Colors.red : Colors.white24,
+                      color: _isLiked ? Colors.red : context.adaptiveWhite24,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -96,11 +120,21 @@ class ReviewCard extends ConsumerWidget {
                   InkWell(
                     onTap: () async {
                       if (user != null) {
+                        // Optimistic Update
+                        setState(() {
+                          if (_isLiked) {
+                            _likesCount--;
+                          } else {
+                            _likesCount++;
+                          }
+                          _isLiked = !_isLiked;
+                        });
+
                         final profile = await ref.read(socialRepositoryProvider).watchProfile(user.uid).first;
                         final userName = profile?.displayName ?? user.email ?? 'Unknown';
                         
-                        ref.read(reviewsRepositoryProvider).toggleLikeReview(
-                          reviewId: review.id,
+                        await ref.read(reviewsRepositoryProvider).toggleLikeReview(
+                          reviewId: widget.review.id,
                           userId: user.uid,
                           userName: userName,
                           notificationsRepo: ref.read(notificationsRepositoryProvider),
@@ -108,27 +142,23 @@ class ReviewCard extends ConsumerWidget {
                       }
                     },
                     child: Icon(
-                      isLiked ? Icons.favorite : Icons.favorite_border,
-                      color: isLiked ? Colors.red : Colors.white24,
+                      _isLiked ? Icons.favorite : Icons.favorite_border,
+                      color: _isLiked ? Colors.red : context.adaptiveWhite24,
                       size: 18,
                     ),
                   ),
                   const SizedBox(width: 16),
                   // Comments
                   Text(
-                    '${review.commentsCount}',
-                    style: const TextStyle(
-                      color: Colors.white24,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    '${widget.review.commentsCount}',
+                    style: TextStyle(color: context.adaptiveWhite70, height: 1.4),
                   ),
                   const SizedBox(width: 4),
                   InkWell(
                     onTap: () => _showComments(context, ref),
-                    child: const Icon(
+                    child: Icon(
                       Icons.chat_bubble_outline,
-                      color: Colors.white24,
+                      color: context.adaptiveWhite24,
                       size: 18,
                     ),
                   ),
@@ -146,7 +176,7 @@ class ReviewCard extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => CommentSection(review: review),
+      builder: (context) => CommentSection(review: widget.review),
     );
   }
 

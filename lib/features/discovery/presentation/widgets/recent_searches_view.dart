@@ -1,3 +1,4 @@
+import 'package:zenthra/shared/utils/adaptive_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../discovery_controller.dart';
@@ -16,11 +17,11 @@ class RecentSearchesView extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Text(
             'HISTORICAL_LOGS',
-            style: TextStyle(color: Colors.white24, fontSize: 8, fontWeight: FontWeight.bold, letterSpacing: 3),
+            style: TextStyle(color: context.adaptiveWhite24, fontSize: 8, fontWeight: FontWeight.bold, letterSpacing: 3),
           ),
         ),
         SizedBox(
@@ -42,7 +43,7 @@ class RecentSearchesView extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       child: Text(
                         query,
-                        style: const TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: context.adaptiveWhite60, fontSize: 10, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),

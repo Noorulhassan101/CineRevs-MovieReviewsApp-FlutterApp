@@ -10,6 +10,7 @@ class UserProfile with _$UserProfile {
     required String email,
     required String displayName,
     String? bio,
+    String? photoUrl,
     @Default(0) int followersCount,
     @Default(0) int followingCount,
     DateTime? createdAt,

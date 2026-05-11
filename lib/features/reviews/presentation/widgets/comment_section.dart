@@ -1,3 +1,4 @@
+import 'package:zenthra/shared/utils/adaptive_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -48,15 +49,15 @@ class _CommentSectionState extends ConsumerState<CommentSection> {
             height: 4,
             margin: const EdgeInsets.symmetric(vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.white12,
+              color: context.adaptiveWhite12,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           
-          const Text(
+          Text(
             'DISCUSSIONS',
             style: TextStyle(
-              color: Colors.white54,
+              color: context.adaptiveWhite54,
               fontSize: 12,
               fontWeight: FontWeight.bold,
               letterSpacing: 2,
@@ -69,10 +70,10 @@ class _CommentSectionState extends ConsumerState<CommentSection> {
             child: commentsAsync.when(
               data: (comments) {
                 if (comments.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text(
                       'NO COMMENTS YET. START THE CONVERSATION!',
-                      style: TextStyle(color: Colors.white10, fontSize: 12),
+                      style: TextStyle(color: context.adaptiveWhite10, fontSize: 12),
                     ),
                   );
                 }
@@ -95,23 +96,23 @@ class _CommentSectionState extends ConsumerState<CommentSection> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppColors.surface,
-              border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05))),
+              border: Border(top: BorderSide(color: context.adaptiveWhite.withOpacity(0.05))),
             ),
             child: Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _commentController,
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    style: TextStyle(color: context.adaptiveWhite, fontSize: 14),
                     decoration: InputDecoration(
                       hintText: 'Add a comment...',
-                      hintStyle: const TextStyle(color: Colors.white24),
+                      hintStyle: TextStyle(color: context.adaptiveWhite24),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide.none,
                       ),
                       filled: true,
-                      fillColor: Colors.white.withOpacity(0.05),
+                      fillColor: context.adaptiveWhite.withOpacity(0.05),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     ),
                   ),
@@ -189,7 +190,7 @@ class _CommentTile extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   comment.text,
-                  style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+                  style: TextStyle(color: context.adaptiveWhite, fontSize: 14),
                 ),
               ],
             ),

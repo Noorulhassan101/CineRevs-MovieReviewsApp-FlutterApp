@@ -12,7 +12,12 @@
           "package_name": "com.example.cinevault"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "998393556558-ncuaia0cj7hc07a6j8omgvjgpklgcutf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyArPCHPyTwTc5YLiScDmPblCs6_s757Cxg"
@@ -20,7 +25,49 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "998393556558-ncuaia0cj7hc07a6j8omgvjgpklgcutf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:998393556558:android:36d2dba82082618ffe9d1f",
+        "android_client_info": {
+          "package_name": "com.noor.zenthra"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "998393556558-m48nbh43l97hcq5eovj3bc3fnpu23a64.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.noor.zenthra",
+            "certificate_hash": "078f0ad2be8dccbfdb7bb9dfb3c775f9fb3ad259"
+          }
+        },
+        {
+          "client_id": "998393556558-ncuaia0cj7hc07a6j8omgvjgpklgcutf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArPCHPyTwTc5YLiScDmPblCs6_s757Cxg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "998393556558-ncuaia0cj7hc07a6j8omgvjgpklgcutf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

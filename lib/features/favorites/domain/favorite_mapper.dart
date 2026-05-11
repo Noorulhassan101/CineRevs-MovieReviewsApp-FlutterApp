@@ -1,5 +1,5 @@
-import 'package:cinevault/features/favorites/domain/favorite_item.dart';
-import 'package:cinevault/shared/models/media_item.dart';
+import 'package:zenthra/features/favorites/domain/favorite_item.dart';
+import 'package:zenthra/shared/models/media_item.dart';
 
 extension FavoriteMapper on FavoriteItem {
   /// Converts FavoriteItem to MediaItem for UI presentation.

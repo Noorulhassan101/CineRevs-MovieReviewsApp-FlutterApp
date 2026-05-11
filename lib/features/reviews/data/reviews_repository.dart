@@ -26,9 +26,13 @@ class ReviewsRepository {
         .where('mediaId', isEqualTo: mediaId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => Review.fromJson(doc.data()))
-            .toList());
+        .map((snapshot) => snapshot.docs.map((doc) {
+              final data = doc.data();
+              if (data['createdAt'] is Timestamp) {
+                data['createdAt'] = (data['createdAt'] as Timestamp).toDate().toIso8601String();
+              }
+              return Review.fromJson(data);
+            }).toList());
   }
 
   Future<double> getAverageRating(String mediaId) async {
@@ -40,7 +44,13 @@ class ReviewsRepository {
     if (snapshot.docs.isEmpty) return 0.0;
     
     final total = snapshot.docs
-        .map((doc) => Review.fromJson(doc.data()).rating)
+        .map((doc) {
+          final data = doc.data();
+          if (data['createdAt'] is Timestamp) {
+            data['createdAt'] = (data['createdAt'] as Timestamp).toDate().toIso8601String();
+          }
+          return Review.fromJson(data).rating;
+        })
         .reduce((a, b) => a + b);
     
     return total / snapshot.docs.length;
@@ -52,9 +62,13 @@ class ReviewsRepository {
         .where('userId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => Review.fromJson(doc.data()))
-            .toList());
+        .map((snapshot) => snapshot.docs.map((doc) {
+              final data = doc.data();
+              if (data['createdAt'] is Timestamp) {
+                data['createdAt'] = (data['createdAt'] as Timestamp).toDate().toIso8601String();
+              }
+              return Review.fromJson(data);
+            }).toList());
   }
 
   Stream<List<Review>> watchAllReviews({int limit = 50}) {
@@ -63,9 +77,33 @@ class ReviewsRepository {
         .orderBy('createdAt', descending: true)
         .limit(limit)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => Review.fromJson(doc.data()))
-            .toList());
+        .map((snapshot) => snapshot.docs.map((doc) {
+              final data = doc.data();
+              if (data['createdAt'] is Timestamp) {
+                data['createdAt'] = (data['createdAt'] as Timestamp).toDate().toIso8601String();
+              }
+              return Review.fromJson(data);
+            }).toList());
+  }
+
+  Stream<List<Review>> getReviewsByCommunity(String communityId, {int limit = 50}) {
+    Query query = _firestore.collection('reviews');
+    
+    if (communityId != 'global') {
+      query = query.where('communityId', isEqualTo: communityId);
+    }
+    
+    return query
+        .orderBy('createdAt', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) {
+              final data = doc.data() as Map<String, dynamic>;
+              if (data['createdAt'] is Timestamp) {
+                data['createdAt'] = (data['createdAt'] as Timestamp).toDate().toIso8601String();
+              }
+              return Review.fromJson(data);
+            }).toList());
   }
 
   Stream<List<Review>> getReviewsByFollowing(List<String> followingIds, {int limit = 50}) {
@@ -77,9 +115,13 @@ class ReviewsRepository {
         .orderBy('createdAt', descending: true)
         .limit(limit)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => Review.fromJson(doc.data()))
-            .toList());
+        .map((snapshot) => snapshot.docs.map((doc) {
+              final data = doc.data();
+              if (data['createdAt'] is Timestamp) {
+                data['createdAt'] = (data['createdAt'] as Timestamp).toDate().toIso8601String();
+              }
+              return Review.fromJson(data);
+            }).toList());
   }
 
   Future<void> toggleLikeReview({
@@ -159,9 +201,13 @@ class ReviewsRepository {
         .collection('comments')
         .orderBy('createdAt', descending: false)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => Comment.fromJson(doc.data()))
-            .toList());
+        .map((snapshot) => snapshot.docs.map((doc) {
+              final data = doc.data();
+              if (data['createdAt'] is Timestamp) {
+                data['createdAt'] = (data['createdAt'] as Timestamp).toDate().toIso8601String();
+              }
+              return Comment.fromJson(data);
+            }).toList());
   }
 
   Stream<List<Review>> getFollowedUserReviewsForMedia(String mediaId, List<String> followingIds) {
@@ -201,6 +247,10 @@ final userReviewsProvider = StreamProvider<List<Review>>((ref) {
 
 final globalReviewsProvider = StreamProvider<List<Review>>((ref) {
   return ref.watch(reviewsRepositoryProvider).watchAllReviews();
+});
+
+final communityReviewsProvider = StreamProvider.family<List<Review>, String>((ref, communityId) {
+  return ref.watch(reviewsRepositoryProvider).getReviewsByCommunity(communityId);
 });
 
 final followingReviewsProvider = StreamProvider<List<Review>>((ref) {

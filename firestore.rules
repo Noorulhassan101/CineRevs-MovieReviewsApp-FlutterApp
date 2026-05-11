@@ -2,16 +2,25 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── Reviews ──────────────────────────────────────────────────────
-    // Anyone can read (for global feed + per-media listings).
-    // Only authenticated users can create, and only with their own userId.
-    // Users can only update/delete their own reviews.
+    // ── Reviews & Comments ───────────────────────────────────────────
     match /reviews/{reviewId} {
       allow read: if true;
       allow create: if request.auth != null
                     && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if request.auth != null
+      allow update: if request.auth != null && (
+        resource.data.userId == request.auth.uid || 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likesCount', 'likedBy', 'commentsCount'])
+      );
+      allow delete: if request.auth != null
                             && resource.data.userId == request.auth.uid;
+                            
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if request.auth != null
+                      && request.resource.data.userId == request.auth.uid;
+        allow update, delete: if request.auth != null
+                              && resource.data.userId == request.auth.uid;
+      }
     }
 
     // ── Watchlist ────────────────────────────────────────────────────
@@ -24,6 +33,79 @@ service cloud.firestore {
                     && request.resource.data.userId == request.auth.uid;
       allow update, delete: if request.auth != null
                              && resource.data.userId == request.auth.uid;
+    }
+
+    // ── Users ────────────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      // Allow users to update their own profile, OR allow others to increment follower counts
+      allow update: if request.auth != null;
+    }
+
+    // ── Follows ──────────────────────────────────────────────────────
+    match /follows/{followId} {
+      allow read: if request.auth != null;
+      // The followerId must be the current user
+      allow create: if request.auth != null && request.resource.data.followerId == request.auth.uid;
+      allow delete: if request.auth != null; // Simplified for client-side unfollow
+    }
+
+    // ── Communities ──────────────────────────────────────────────────
+    match /communities/{communityId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
+      // Owner can change anything. Members may only change membership fields (arrayUnion/increment
+      // can make hasOnly(['memberIds','membersCount']) fail on some writes; deny changes to core metadata instead).
+      allow update: if request.auth != null && (
+        resource.data.ownerId == request.auth.uid ||
+        !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['id', 'ownerId', 'name', 'description', 'iconUrl', 'createdAt', 'category'])
+      );
+      allow delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+
+      match /questionnaires/{questionnaireId} {
+        allow read: if true;
+        allow create, update, delete: if request.auth != null
+            && get(/databases/$(database)/documents/communities/$(communityId)).data.ownerId == request.auth.uid;
+      }
+
+      match /messages/{messageId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null
+            && request.resource.data.userId == request.auth.uid;
+        allow update: if request.auth != null
+            && resource.data.userId == request.auth.uid;
+        allow delete: if request.auth != null
+            && (
+              resource.data.userId == request.auth.uid
+              || get(/databases/$(database)/documents/communities/$(communityId)).data.ownerId == request.auth.uid
+            );
+      }
+    }
+
+    // ── Questionnaire responses (join flow) ─────────────────────────
+    match /questionnaire_responses/{responseId} {
+      allow create: if request.auth != null
+          && request.resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && (
+        resource.data.userId == request.auth.uid
+        || get(/databases/$(database)/documents/communities/$(resource.data.communityId)).data.ownerId == request.auth.uid
+      );
+      allow update, delete: if false;
+    }
+
+    // ── Collections ──────────────────────────────────────────────────
+    match /collections/{collectionId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    // ── Notifications ────────────────────────────────────────────────
+    match /users/{userId}/notifications/{notificationId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null; // Anyone can send a notification
     }
 
     // ── Default: deny everything else ────────────────────────────────

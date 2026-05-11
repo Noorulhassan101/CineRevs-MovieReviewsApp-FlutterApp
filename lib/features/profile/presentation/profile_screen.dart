@@ -1,3 +1,4 @@
+import 'package:zenthra/shared/utils/adaptive_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,7 +19,7 @@ import '../../../shared/widgets/media_card.dart';
 import '../../../core/theme/app_colors.dart';
 
 // THIS IS THE LINE YOU NEED TO ADD:
-import 'package:cinevault/features/favorites/domain/favorite_mapper.dart';
+import 'package:zenthra/features/favorites/domain/favorite_mapper.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -34,7 +35,7 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('MY VAULT'),
+        title: const Text('Profile'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -54,14 +55,17 @@ class ProfileScreen extends ConsumerWidget {
                   CircleAvatar(
                     radius: 40,
                     backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                    child: Text(
-                      (profile?.displayName ?? user?.email ?? 'U').substring(0, 1).toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
+                    backgroundImage: profile?.photoUrl != null ? NetworkImage(profile!.photoUrl!) : null,
+                    child: profile?.photoUrl == null
+                        ? Text(
+                            (profile?.displayName ?? user?.email ?? 'U').substring(0, 1).toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          )
+                        : null,
                   ),
                   const SizedBox(width: 20),
                   Expanded(
@@ -77,7 +81,7 @@ class ProfileScreen extends ConsumerWidget {
                             padding: const EdgeInsets.only(top: 4),
                             child: Text(
                               profile.bio!,
-                              style: const TextStyle(color: Colors.white70, fontSize: 13),
+                              style: TextStyle(color: context.adaptiveWhite70, fontSize: 13),
                             ),
                           ),
                         TextButton.icon(
@@ -86,7 +90,7 @@ class ProfileScreen extends ConsumerWidget {
                             MaterialPageRoute(builder: (context) => EditProfileScreen(initialProfile: profile)),
                           ),
                           icon: const Icon(Icons.edit, size: 14),
-                          label: const Text('EDIT PROFILE', style: TextStyle(fontSize: 10)),
+                          label: const Text('Edit Profile', style: TextStyle(fontSize: 12)),
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
                             minimumSize: const Size(0, 30),
@@ -139,16 +143,16 @@ class ProfileScreen extends ConsumerWidget {
 
             // ── Collections Section ──────────────────────────────────
             _SectionHeader(
-              title: 'MY COLLECTIONS',
+              title: 'Collections',
               icon: Icons.collections_bookmark,
               onAction: () => _showCreateCollectionDialog(context, ref),
-              actionLabel: 'NEW',
+              actionLabel: 'New',
             ),
             const SizedBox(height: 16),
             collectionsAsync.when(
               data: (collections) {
                 if (collections.isEmpty) {
-                  return const _EmptyMessage(text: 'NO COLLECTIONS YET.');
+                  return const _EmptyMessage(text: 'No collections yet.');
                 }
                 return SizedBox(
                   height: 140,
@@ -168,12 +172,12 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 48),
 
             // ── Favorites Section ────────────────────────────────────
-            const _SectionHeader(title: 'MY FAVORITES', icon: Icons.favorite),
+            const _SectionHeader(title: 'Favorites', icon: Icons.favorite),
             const SizedBox(height: 16),
             favoritesAsync.when(
               data: (favorites) {
                 if (favorites.isEmpty) {
-                  return const _EmptyMessage(text: 'NO FAVORITES YET.');
+                  return const _EmptyMessage(text: 'No favorites yet.');
                 }
                 return GridView.builder(
                   shrinkWrap: true,
@@ -200,12 +204,12 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 48),
 
             // ── Watchlist Section ────────────────────────────────────
-            const _SectionHeader(title: 'MY WATCHLIST', icon: Icons.bookmark),
+            const _SectionHeader(title: 'Watchlist', icon: Icons.bookmark),
             const SizedBox(height: 16),
             watchlistAsync.when(
               data: (items) {
                 if (items.isEmpty) {
-                  return const _EmptyMessage(text: 'YOUR WATCHLIST IS EMPTY.');
+                  return const _EmptyMessage(text: 'Your watchlist is empty.');
                 }
                 return GridView.builder(
                   shrinkWrap: true,
@@ -242,13 +246,13 @@ class ProfileScreen extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: const Text('NEW COLLECTION', style: TextStyle(letterSpacing: 2)),
+        title: const Text('New Collection', style: TextStyle(letterSpacing: 1)),
         content: TextField(
           controller: titleController,
           decoration: const InputDecoration(hintText: 'Collection Title (e.g. Top Action)'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCEL')),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
           TextButton(
             onPressed: () async {
               final title = titleController.text.trim();
@@ -268,7 +272,7 @@ class ProfileScreen extends ConsumerWidget {
                 }
               }
             },
-            child: const Text('CREATE', style: TextStyle(color: AppColors.primaryAccent)),
+            child: const Text('Create', style: TextStyle(color: AppColors.primaryAccent)),
           ),
         ],
       ),
@@ -282,49 +286,54 @@ class _CollectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 140,
-      margin: const EdgeInsets.only(right: 16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white10),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: collection.items.isEmpty
-                ? const Center(child: Icon(Icons.collections, color: Colors.white12))
-                : Stack(
-                    children: [
-                      Positioned.fill(
-                        child: collection.items.first.posterPath != null 
-                          ? Image.network(collection.items.first.posterPath!, fit: BoxFit.cover)
-                          : const Center(child: Icon(Icons.movie, color: Colors.white24)),
-                      ),
-                      Container(color: Colors.black45),
-                      Center(
-                        child: Text(
-                          '${collection.items.length}\nITEMS',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+    return GestureDetector(
+      onTap: () {
+        context.go('/collection/${collection.id}', extra: collection);
+      },
+      child: Container(
+        width: 140,
+        margin: const EdgeInsets.only(right: 16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: context.adaptiveWhite10),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: collection.items.isEmpty
+                  ? Center(child: Icon(Icons.collections, color: context.adaptiveWhite12))
+                  : Stack(
+                      children: [
+                        Positioned.fill(
+                          child: collection.items.first.posterPath != null 
+                            ? Image.network(collection.items.first.posterPath!, fit: BoxFit.cover)
+                            : Center(child: Icon(Icons.movie, color: context.adaptiveWhite24)),
                         ),
-                      ),
-                    ],
-                  ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              collection.title.toUpperCase(),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1),
+                        Container(color: Colors.black45),
+                        Center(
+                          child: Text(
+                            '${collection.items.length}\nItems',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                        ),
+                      ],
+                    ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                collection.title.toUpperCase(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -357,7 +366,7 @@ class _SectionHeader extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                letterSpacing: 2,
+                letterSpacing: 1,
               ),
             ),
           ],
@@ -366,8 +375,8 @@ class _SectionHeader extends StatelessWidget {
           TextButton(
             onPressed: onAction,
             child: Text(
-              actionLabel ?? 'SEE ALL',
-              style: const TextStyle(fontSize: 12, color: AppColors.primaryAccent),
+              actionLabel ?? 'See All',
+              style: const TextStyle(fontSize: 14, color: AppColors.primaryAccent),
             ),
           ),
       ],
@@ -384,7 +393,7 @@ class _EmptyMessage extends StatelessWidget {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 24),
-        child: Text(text, style: const TextStyle(color: Colors.white24, letterSpacing: 1)),
+        child: Text(text, style: TextStyle(color: context.adaptiveWhite24, letterSpacing: 1)),
       ),
     );
   }
@@ -435,7 +444,7 @@ class _StatChip extends StatelessWidget {
             ),
             Text(
               label,
-              style: const TextStyle(fontSize: 10, color: Colors.white54),
+              style: TextStyle(color: context.adaptiveWhite70, fontSize: 13),
             ),
           ],
         ),

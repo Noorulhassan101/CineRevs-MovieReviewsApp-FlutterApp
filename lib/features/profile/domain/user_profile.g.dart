@@ -12,6 +12,7 @@ _$UserProfileImpl _$$UserProfileImplFromJson(Map<String, dynamic> json) =>
       email: json['email'] as String,
       displayName: json['displayName'] as String,
       bio: json['bio'] as String?,
+      photoUrl: json['photoUrl'] as String?,
       followersCount: (json['followersCount'] as num?)?.toInt() ?? 0,
       followingCount: (json['followingCount'] as num?)?.toInt() ?? 0,
       createdAt: json['createdAt'] == null
@@ -25,6 +26,7 @@ Map<String, dynamic> _$$UserProfileImplToJson(_$UserProfileImpl instance) =>
       'email': instance.email,
       'displayName': instance.displayName,
       'bio': instance.bio,
+      'photoUrl': instance.photoUrl,
       'followersCount': instance.followersCount,
       'followingCount': instance.followingCount,
       'createdAt': instance.createdAt?.toIso8601String(),

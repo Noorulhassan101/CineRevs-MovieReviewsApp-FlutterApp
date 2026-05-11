@@ -1,3 +1,4 @@
+import 'package:zenthra/shared/utils/adaptive_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,7 +11,7 @@ import '../../auth/data/auth_repository.dart';
 import '../domain/recent_search.dart';
 import 'discovery_controller.dart';
 import '../../../core/theme/theme_controller.dart';
-import '../../reviews/presentation/global_feed_screen.dart';
+import '../../reviews/presentation/communities_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../notifications/presentation/notifications_screen.dart';
 import '../../notifications/data/notifications_repository.dart';
@@ -30,7 +31,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   final List<Widget> _screens = [
     const _DiscoveryView(),
-    const GlobalFeedScreen(),
+    const CommunitiesScreen(),
     const NotificationsScreen(),
     const ProfileScreen(),
   ];
@@ -48,7 +49,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           borderRadius: 0,
           blur: 20,
           opacity: 0.1,
-          border: Border(top: BorderSide(color: Colors.white.withOpacity(0.05))),
+          border: Border(top: BorderSide(color: context.adaptiveWhite.withOpacity(0.05))),
           child: BottomNavigationBar(
             currentIndex: _currentIndex,
             onTap: (index) => setState(() => _currentIndex = index),
@@ -58,12 +59,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const BottomNavigationBarItem(
                 icon: Icon(Icons.explore_outlined),
                 activeIcon: Icon(Icons.explore),
-                label: 'DISCOVER',
+                label: 'Discover',
               ),
               const BottomNavigationBarItem(
-                icon: Icon(Icons.stream_outlined),
-                activeIcon: Icon(Icons.stream),
-                label: 'FEED',
+                icon: Icon(Icons.groups_outlined),
+                activeIcon: Icon(Icons.groups),
+                label: 'Communities',
               ),
               BottomNavigationBarItem(
                 icon: unreadCountAsync.maybeWhen(
@@ -73,12 +74,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   orElse: () => const Icon(Icons.notifications_outlined),
                 ),
                 activeIcon: const Icon(Icons.notifications),
-                label: 'ALERTS',
+                label: 'Notifications',
               ),
               const BottomNavigationBarItem(
-                icon: Icon(Icons.shield_outlined),
-                activeIcon: Icon(Icons.shield),
-                label: 'VAULT',
+                icon: Icon(Icons.person_outline),
+                activeIcon: Icon(Icons.person),
+                label: 'Profile',
               ),
             ],
           ),
@@ -137,28 +138,31 @@ class _DiscoveryViewState extends ConsumerState<_DiscoveryView> {
             slivers: [
               SliverAppBar(
                 floating: true,
-                expandedHeight: 140,
+                expandedHeight: 80,
                 backgroundColor: Colors.transparent,
                 actions: [
                   IconButton(
-                    icon: Icon(Icons.style, color: theme.colorScheme.primary),
+                    icon: Icon(Icons.palette_outlined, color: theme.colorScheme.primary),
                     onPressed: () => _showThemePicker(context),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.power_settings_new, color: Colors.white54),
+                    icon: Icon(Icons.logout_outlined, color: context.adaptiveWhite54),
                     onPressed: () => ref.read(authRepositoryProvider).signOut(),
                   ),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
-                  centerTitle: true,
+                  centerTitle: false,
+                  titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
                   title: Text(
-                    'ZENTHRA',
-                    style: theme.textTheme.displayMedium?.copyWith(
+                    'Zenthra',
+                    style: theme.textTheme.headlineSmall?.copyWith(
                           color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.2,
                           shadows: [
                             Shadow(
-                              color: theme.colorScheme.primary.withOpacity(0.5),
-                              blurRadius: 10,
+                              color: theme.colorScheme.primary.withOpacity(0.3),
+                              blurRadius: 8,
                             ),
                           ],
                         ),
@@ -166,43 +170,11 @@ class _DiscoveryViewState extends ConsumerState<_DiscoveryView> {
                 ),
               ),
               
-              // Genre Filters with Futuristic Design
+              // Genre Filters with Dropdown
               SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 60,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    children: [
-                      'ALL', 'ACTION', 'COMEDY', 'HORROR', 'ANIME', 'DRAMA', 'SCI-FI',
-                    ].map((genre) {
-                      final isSelected = (genre == 'ALL' && searchQuery.isEmpty) || 
-                                         searchQuery.toUpperCase() == genre;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 12),
-                        child: FilterChip(
-                          label: Text(genre),
-                          selected: isSelected,
-                          onSelected: (selected) {
-                            if (selected) {
-                              ref.read(searchQueryProvider.notifier).update(genre == 'ALL' ? '' : genre.toLowerCase());
-                            }
-                          },
-                          backgroundColor: Colors.transparent,
-                          selectedColor: theme.colorScheme.primary.withOpacity(0.2),
-                          side: BorderSide(
-                            color: isSelected ? theme.colorScheme.primary : Colors.white12,
-                          ),
-                          labelStyle: TextStyle(
-                            color: isSelected ? theme.colorScheme.primary : Colors.white60,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: _CategoryDropdown(selectedGenre: searchQuery),
                 ),
               ),
 
@@ -226,11 +198,11 @@ class _DiscoveryViewState extends ConsumerState<_DiscoveryView> {
                           ref.read(searchQueryProvider.notifier).update(value);
                         });
                       },
-                      style: const TextStyle(color: Colors.white),
+                      style: TextStyle(color: context.adaptiveWhite),
                       decoration: InputDecoration(
-                        hintText: 'SCANNING FOR MEDIA...',
-                        hintStyle: const TextStyle(color: Colors.white24, fontSize: 12),
-                        prefixIcon: Icon(Icons.radar, color: theme.colorScheme.primary),
+                        hintText: 'Search movies, shows, or anime...',
+                        hintStyle: TextStyle(color: context.adaptiveWhite24, fontSize: 14),
+                        prefixIcon: Icon(Icons.search, color: theme.colorScheme.primary),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                       ),
@@ -249,7 +221,7 @@ class _DiscoveryViewState extends ConsumerState<_DiscoveryView> {
                   data: (items) => items.isNotEmpty 
                     ? SliverToBoxAdapter(
                         child: _MediaSection(
-                          title: 'FOR YOU',
+                          title: 'Recommended for You',
                           itemsAsync: AsyncValue.data(items),
                         ),
                       )
@@ -259,13 +231,13 @@ class _DiscoveryViewState extends ConsumerState<_DiscoveryView> {
                 ),
                 SliverToBoxAdapter(
                   child: _MediaSection(
-                    title: 'TRENDING MOVIES',
+                    title: 'Trending Movies',
                     itemsAsync: trendingMoviesAsync,
                   ),
                 ),
                 SliverToBoxAdapter(
                   child: _MediaSection(
-                    title: 'POPULAR ANIME',
+                    title: 'Popular Anime',
                     itemsAsync: popularAnimeAsync,
                   ),
                 ),
@@ -294,12 +266,12 @@ class _DiscoveryViewState extends ConsumerState<_DiscoveryView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('SELECT ATMOSPHERE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 2)),
-              const SizedBox(height: 24),
-              _ThemeOption(title: 'ZENITH', mode: AppThemeMode.light, color: Colors.white),
-              _ThemeOption(title: 'MIDNIGHT', mode: AppThemeMode.midnight, color: AppColors.background),
-              _ThemeOption(title: 'OBSIDIAN', mode: AppThemeMode.obsidian, color: Colors.black),
-              _ThemeOption(title: 'NEBULA', mode: AppThemeMode.nebula, color: AppColors.nebulaBackground),
+              Text('Select Theme', style: TextStyle(color: context.adaptiveWhite, fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              _ThemeOption(title: 'Light Mode', mode: AppThemeMode.light, color: context.adaptiveWhite),
+              _ThemeOption(title: 'Dark Mode', mode: AppThemeMode.midnight, color: AppColors.background),
+              _ThemeOption(title: 'AMOLED Dark', mode: AppThemeMode.obsidian, color: Colors.black),
+              _ThemeOption(title: 'Nebula', mode: AppThemeMode.nebula, color: AppColors.nebulaBackground),
             ],
           ),
         ),
@@ -332,10 +304,10 @@ class _ThemeOption extends ConsumerWidget {
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
-          border: Border.all(color: isSelected ? theme.colorScheme.primary : Colors.white24, width: 2),
+          border: Border.all(color: isSelected ? theme.colorScheme.primary : context.adaptiveWhite24, width: 2),
         ),
       ),
-      title: Text(title, style: TextStyle(color: isSelected ? theme.colorScheme.primary : Colors.white70, fontWeight: FontWeight.bold, fontSize: 12)),
+      title: Text(title, style: TextStyle(color: isSelected ? theme.colorScheme.primary : context.adaptiveWhite70, fontWeight: FontWeight.bold, fontSize: 12)),
       trailing: isSelected ? Icon(Icons.check_circle, color: theme.colorScheme.primary, size: 20) : null,
     );
   }
@@ -356,7 +328,7 @@ class _MediaSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24),
           child: Text(
             title,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 2),
+            style: TextStyle(color: context.adaptiveWhite),
           ),
         ),
         SizedBox(
@@ -407,7 +379,60 @@ class _SearchResultsGrid extends ConsumerWidget {
         ),
       ),
       loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
-      error: (e, s) => const SliverToBoxAdapter(child: Center(child: Text('ERROR SCANNING'))),
+      error: (e, s) => const SliverToBoxAdapter(child: Center(child: Text('Error finding results.'))),
+    );
+  }
+}
+
+class _CategoryDropdown extends ConsumerWidget {
+  final String selectedGenre;
+
+  const _CategoryDropdown({required this.selectedGenre});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeControllerProvider.notifier).currentTheme;
+    final genres = ['All', 'Action', 'Comedy', 'Horror', 'Anime', 'Drama', 'Sci-Fi'];
+    final displayValue = selectedGenre.isEmpty ? 'All' : selectedGenre[0].toUpperCase() + selectedGenre.substring(1);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        border: Border.all(color: theme.colorScheme.primary.withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(8),
+        color: theme.colorScheme.primary.withOpacity(0.05),
+      ),
+      child: DropdownButton<String>(
+        value: displayValue,
+        isExpanded: true,
+        underline: const SizedBox(),
+        items: genres.map((genre) {
+          return DropdownMenuItem<String>(
+            value: genre,
+            child: Text(
+              genre,
+              style: TextStyle(
+                color: theme.colorScheme.primary,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1,
+              ),
+            ),
+          );
+        }).toList(),
+        onChanged: (value) {
+          if (value != null) {
+            ref.read(searchQueryProvider.notifier).update(value == 'All' ? '' : value.toLowerCase());
+          }
+        },
+        style: TextStyle(
+          color: theme.colorScheme.primary,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+        dropdownColor: theme.scaffoldBackgroundColor,
+        iconEnabledColor: theme.colorScheme.primary,
+      ),
     );
   }
 }

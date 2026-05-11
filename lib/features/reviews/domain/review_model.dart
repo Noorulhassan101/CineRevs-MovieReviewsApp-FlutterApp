@@ -17,6 +17,8 @@ class Review with _$Review {
     @Default(0) int likesCount,
     @Default([]) List<String> likedBy,
     @Default(0) int commentsCount,
+    @Default('global') String communityId,
+    @Default('Global') String communityName,
   }) = _Review;
 
   factory Review.fromJson(Map<String, dynamic> json) => _$ReviewFromJson(json);

@@ -21,6 +21,8 @@ _$ReviewImpl _$$ReviewImplFromJson(Map<String, dynamic> json) => _$ReviewImpl(
               .toList() ??
           const [],
       commentsCount: (json['commentsCount'] as num?)?.toInt() ?? 0,
+      communityId: json['communityId'] as String? ?? 'global',
+      communityName: json['communityName'] as String? ?? 'Global',
     );
 
 Map<String, dynamic> _$$ReviewImplToJson(_$ReviewImpl instance) =>
@@ -36,4 +38,6 @@ Map<String, dynamic> _$$ReviewImplToJson(_$ReviewImpl instance) =>
       'likesCount': instance.likesCount,
       'likedBy': instance.likedBy,
       'commentsCount': instance.commentsCount,
+      'communityId': instance.communityId,
+      'communityName': instance.communityName,
     };

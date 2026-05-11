@@ -1,3 +1,4 @@
+import 'package:zenthra/shared/utils/adaptive_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/data/auth_repository.dart';
@@ -38,33 +39,37 @@ class PublicProfileScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // ── User Header ──────────────────────────────────────────
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                      child: Text(
-                        userName.substring(0, 1).toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                ref.watch(userProfileProvider(userId)).when(
+                  data: (profile) => Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 40,
+                        backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                        backgroundImage: profile?.photoUrl != null ? NetworkImage(profile!.photoUrl!) : null,
+                        child: profile?.photoUrl == null
+                            ? Text(
+                                (profile?.displayName ?? userName).substring(0, 1).toUpperCase(),
+                                style: TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              )
+                            : null,
                       ),
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            userName,
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const Text(
-                            'CineVault Member',
-                            style: TextStyle(color: Colors.white54, fontSize: 12),
-                          ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              profile?.displayName ?? userName,
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            Text(
+                              profile?.bio ?? 'Zenthra Member',
+                              style: TextStyle(color: context.adaptiveWhite54, fontSize: 12),
+                            ),
                           if (currentUserId != null && currentUserId != userId)
                             Padding(
                               padding: const EdgeInsets.only(top: 8),
@@ -86,8 +91,8 @@ class PublicProfileScreen extends ConsumerWidget {
                                     }
                                   },
                                   style: OutlinedButton.styleFrom(
-                                    foregroundColor: isFollowing ? Colors.white54 : Theme.of(context).colorScheme.primary,
-                                    side: BorderSide(color: isFollowing ? Colors.white24 : Theme.of(context).colorScheme.primary),
+                                    foregroundColor: isFollowing ? context.adaptiveWhite54 : Theme.of(context).colorScheme.primary,
+                                    side: BorderSide(color: isFollowing ? context.adaptiveWhite24 : Theme.of(context).colorScheme.primary),
                                     visualDensity: VisualDensity.compact,
                                   ),
                                   child: Text(isFollowing ? 'UNFOLLOW' : 'FOLLOW'),
@@ -101,6 +106,9 @@ class PublicProfileScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (_, __) => const SizedBox.shrink(),
+              ),
                 const SizedBox(height: 16),
 
                 // ── Stats Row ────────────────────────────────────────────
@@ -229,7 +237,7 @@ class _EmptyMessage extends StatelessWidget {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 24),
-        child: Text(text, style: const TextStyle(color: Colors.white24, letterSpacing: 1)),
+        child: Text(text, style: TextStyle(color: context.adaptiveWhite24, letterSpacing: 1)),
       ),
     );
   }
@@ -272,7 +280,7 @@ class _StatChip extends StatelessWidget {
             ),
             Text(
               label,
-              style: const TextStyle(fontSize: 10, color: Colors.white54),
+              style: TextStyle(fontSize: 10, color: context.adaptiveWhite54),
             ),
           ],
         ),

@@ -35,9 +35,13 @@ class CollectionsRepository {
         .where('userId', isEqualTo: userId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => Collection.fromJson(doc.data()))
-            .toList());
+        .map((snapshot) => snapshot.docs.map((doc) {
+              final data = doc.data();
+              if (data['createdAt'] is Timestamp) {
+                data['createdAt'] = (data['createdAt'] as Timestamp).toDate().toIso8601String();
+              }
+              return Collection.fromJson(data);
+            }).toList());
   }
 
   Stream<List<Collection>> watchPublicCollections() {
@@ -47,14 +51,43 @@ class CollectionsRepository {
         .orderBy('likesCount', descending: true)
         .limit(20)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => Collection.fromJson(doc.data()))
-            .toList());
+        .map((snapshot) => snapshot.docs.map((doc) {
+              final data = doc.data();
+              if (data['createdAt'] is Timestamp) {
+                data['createdAt'] = (data['createdAt'] as Timestamp).toDate().toIso8601String();
+              }
+              return Collection.fromJson(data);
+            }).toList());
   }
 
   Future<void> toggleLikeCollection(String collectionId, String userId) async {
     final docRef = _firestore.collection('collections').doc(collectionId);
     // similar to review likes
+  }
+
+  Future<Collection?> getCollection(String id) async {
+    final doc = await _firestore.collection('collections').doc(id).get();
+    if (!doc.exists) return null;
+    final data = doc.data()!;
+    if (data['createdAt'] is Timestamp) {
+      data['createdAt'] = (data['createdAt'] as Timestamp).toDate().toIso8601String();
+    }
+    return Collection.fromJson(data);
+  }
+
+  Stream<Collection?> watchCollection(String id) {
+    return _firestore
+        .collection('collections')
+        .doc(id)
+        .snapshots()
+        .map((doc) {
+          if (!doc.exists) return null;
+          final data = doc.data()!;
+          if (data['createdAt'] is Timestamp) {
+            data['createdAt'] = (data['createdAt'] as Timestamp).toDate().toIso8601String();
+          }
+          return Collection.fromJson(data);
+        });
   }
 }
 

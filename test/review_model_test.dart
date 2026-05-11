@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:cinevault/features/reviews/domain/review_model.dart';
+import 'package:zenthra/features/reviews/domain/review_model.dart';
 
 void main() {
   group('Review Model Tests', () {

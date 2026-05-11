@@ -1,3 +1,4 @@
+import 'package:zenthra/shared/utils/adaptive_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../discovery_controller.dart';
@@ -65,7 +66,7 @@ class FilterBar extends ConsumerWidget {
           padding: const EdgeInsets.all(24),
           children: ['2024', '2023', '2022', '2021', '2020', '2010s', '2000s'].map((year) {
             return ListTile(
-              title: Text(year, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1)),
+              title: Text(year, style: TextStyle(color: context.adaptiveWhite, fontWeight: FontWeight.bold, letterSpacing: 1)),
               onTap: () {
                 ref.read(discoveryFilterProvider.notifier).setYear(year);
                 Navigator.pop(context);
@@ -88,7 +89,7 @@ class FilterBar extends ConsumerWidget {
           padding: const EdgeInsets.all(24),
           children: [9.0, 8.0, 7.0, 6.0].map((rating) {
             return ListTile(
-              title: Text('★ $rating+', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1)),
+              title: Text('★ $rating+', style: TextStyle(color: context.adaptiveWhite, fontWeight: FontWeight.bold, letterSpacing: 1)),
               onTap: () {
                 ref.read(discoveryFilterProvider.notifier).setRating(rating);
                 Navigator.pop(context);
@@ -121,7 +122,7 @@ class _FilterChip extends StatelessWidget {
         borderRadius: 12,
         opacity: isSelected ? 0.3 : 0.05,
         border: Border.all(
-          color: isSelected ? theme.colorScheme.primary : Colors.white10,
+          color: isSelected ? theme.colorScheme.primary : context.adaptiveWhite10,
           width: 1,
         ),
         showGlow: isSelected,
@@ -131,7 +132,7 @@ class _FilterChip extends StatelessWidget {
           child: Text(
             label.toUpperCase(),
             style: TextStyle(
-              color: isSelected ? theme.colorScheme.primary : Colors.white60,
+              color: isSelected ? theme.colorScheme.primary : context.adaptiveWhite60,
               fontSize: 10,
               fontWeight: FontWeight.bold,
               letterSpacing: 2,

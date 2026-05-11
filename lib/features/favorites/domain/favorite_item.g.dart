@@ -27,33 +27,43 @@ const FavoriteItemSchema = CollectionSchema(
       name: r'backdropPath',
       type: IsarType.string,
     ),
-    r'mediaId': PropertySchema(
+    r'entryKey': PropertySchema(
       id: 2,
+      name: r'entryKey',
+      type: IsarType.string,
+    ),
+    r'mediaId': PropertySchema(
+      id: 3,
       name: r'mediaId',
       type: IsarType.string,
     ),
     r'overview': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'overview',
       type: IsarType.string,
     ),
     r'posterPath': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'posterPath',
       type: IsarType.string,
     ),
     r'title': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'title',
       type: IsarType.string,
     ),
     r'type': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'type',
       type: IsarType.string,
     ),
+    r'userId': PropertySchema(
+      id: 8,
+      name: r'userId',
+      type: IsarType.string,
+    ),
     r'voteAverage': PropertySchema(
-      id: 7,
+      id: 9,
       name: r'voteAverage',
       type: IsarType.double,
     )
@@ -64,11 +74,24 @@ const FavoriteItemSchema = CollectionSchema(
   deserializeProp: _favoriteItemDeserializeProp,
   idName: r'id',
   indexes: {
+    r'entryKey': IndexSchema(
+      id: 7468454376934395055,
+      name: r'entryKey',
+      unique: true,
+      replace: true,
+      properties: [
+        IndexPropertySchema(
+          name: r'entryKey',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
     r'mediaId': IndexSchema(
       id: -8001372983137409759,
       name: r'mediaId',
-      unique: true,
-      replace: true,
+      unique: false,
+      replace: false,
       properties: [
         IndexPropertySchema(
           name: r'mediaId',
@@ -98,6 +121,7 @@ int _favoriteItemEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.entryKey.length * 3;
   bytesCount += 3 + object.mediaId.length * 3;
   bytesCount += 3 + object.overview.length * 3;
   {
@@ -108,6 +132,7 @@ int _favoriteItemEstimateSize(
   }
   bytesCount += 3 + object.title.length * 3;
   bytesCount += 3 + object.type.length * 3;
+  bytesCount += 3 + object.userId.length * 3;
   return bytesCount;
 }
 
@@ -119,12 +144,14 @@ void _favoriteItemSerialize(
 ) {
   writer.writeDateTime(offsets[0], object.addedAt);
   writer.writeString(offsets[1], object.backdropPath);
-  writer.writeString(offsets[2], object.mediaId);
-  writer.writeString(offsets[3], object.overview);
-  writer.writeString(offsets[4], object.posterPath);
-  writer.writeString(offsets[5], object.title);
-  writer.writeString(offsets[6], object.type);
-  writer.writeDouble(offsets[7], object.voteAverage);
+  writer.writeString(offsets[2], object.entryKey);
+  writer.writeString(offsets[3], object.mediaId);
+  writer.writeString(offsets[4], object.overview);
+  writer.writeString(offsets[5], object.posterPath);
+  writer.writeString(offsets[6], object.title);
+  writer.writeString(offsets[7], object.type);
+  writer.writeString(offsets[8], object.userId);
+  writer.writeDouble(offsets[9], object.voteAverage);
 }
 
 FavoriteItem _favoriteItemDeserialize(
@@ -136,13 +163,15 @@ FavoriteItem _favoriteItemDeserialize(
   final object = FavoriteItem();
   object.addedAt = reader.readDateTime(offsets[0]);
   object.backdropPath = reader.readStringOrNull(offsets[1]);
+  object.entryKey = reader.readString(offsets[2]);
   object.id = id;
-  object.mediaId = reader.readString(offsets[2]);
-  object.overview = reader.readString(offsets[3]);
-  object.posterPath = reader.readStringOrNull(offsets[4]);
-  object.title = reader.readString(offsets[5]);
-  object.type = reader.readString(offsets[6]);
-  object.voteAverage = reader.readDouble(offsets[7]);
+  object.mediaId = reader.readString(offsets[3]);
+  object.overview = reader.readString(offsets[4]);
+  object.posterPath = reader.readStringOrNull(offsets[5]);
+  object.title = reader.readString(offsets[6]);
+  object.type = reader.readString(offsets[7]);
+  object.userId = reader.readString(offsets[8]);
+  object.voteAverage = reader.readDouble(offsets[9]);
   return object;
 }
 
@@ -162,12 +191,16 @@ P _favoriteItemDeserializeProp<P>(
     case 3:
       return (reader.readString(offset)) as P;
     case 4:
-      return (reader.readStringOrNull(offset)) as P;
-    case 5:
       return (reader.readString(offset)) as P;
+    case 5:
+      return (reader.readStringOrNull(offset)) as P;
     case 6:
       return (reader.readString(offset)) as P;
     case 7:
+      return (reader.readString(offset)) as P;
+    case 8:
+      return (reader.readString(offset)) as P;
+    case 9:
       return (reader.readDouble(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -188,57 +221,57 @@ void _favoriteItemAttach(
 }
 
 extension FavoriteItemByIndex on IsarCollection<FavoriteItem> {
-  Future<FavoriteItem?> getByMediaId(String mediaId) {
-    return getByIndex(r'mediaId', [mediaId]);
+  Future<FavoriteItem?> getByEntryKey(String entryKey) {
+    return getByIndex(r'entryKey', [entryKey]);
   }
 
-  FavoriteItem? getByMediaIdSync(String mediaId) {
-    return getByIndexSync(r'mediaId', [mediaId]);
+  FavoriteItem? getByEntryKeySync(String entryKey) {
+    return getByIndexSync(r'entryKey', [entryKey]);
   }
 
-  Future<bool> deleteByMediaId(String mediaId) {
-    return deleteByIndex(r'mediaId', [mediaId]);
+  Future<bool> deleteByEntryKey(String entryKey) {
+    return deleteByIndex(r'entryKey', [entryKey]);
   }
 
-  bool deleteByMediaIdSync(String mediaId) {
-    return deleteByIndexSync(r'mediaId', [mediaId]);
+  bool deleteByEntryKeySync(String entryKey) {
+    return deleteByIndexSync(r'entryKey', [entryKey]);
   }
 
-  Future<List<FavoriteItem?>> getAllByMediaId(List<String> mediaIdValues) {
-    final values = mediaIdValues.map((e) => [e]).toList();
-    return getAllByIndex(r'mediaId', values);
+  Future<List<FavoriteItem?>> getAllByEntryKey(List<String> entryKeyValues) {
+    final values = entryKeyValues.map((e) => [e]).toList();
+    return getAllByIndex(r'entryKey', values);
   }
 
-  List<FavoriteItem?> getAllByMediaIdSync(List<String> mediaIdValues) {
-    final values = mediaIdValues.map((e) => [e]).toList();
-    return getAllByIndexSync(r'mediaId', values);
+  List<FavoriteItem?> getAllByEntryKeySync(List<String> entryKeyValues) {
+    final values = entryKeyValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'entryKey', values);
   }
 
-  Future<int> deleteAllByMediaId(List<String> mediaIdValues) {
-    final values = mediaIdValues.map((e) => [e]).toList();
-    return deleteAllByIndex(r'mediaId', values);
+  Future<int> deleteAllByEntryKey(List<String> entryKeyValues) {
+    final values = entryKeyValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'entryKey', values);
   }
 
-  int deleteAllByMediaIdSync(List<String> mediaIdValues) {
-    final values = mediaIdValues.map((e) => [e]).toList();
-    return deleteAllByIndexSync(r'mediaId', values);
+  int deleteAllByEntryKeySync(List<String> entryKeyValues) {
+    final values = entryKeyValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'entryKey', values);
   }
 
-  Future<Id> putByMediaId(FavoriteItem object) {
-    return putByIndex(r'mediaId', object);
+  Future<Id> putByEntryKey(FavoriteItem object) {
+    return putByIndex(r'entryKey', object);
   }
 
-  Id putByMediaIdSync(FavoriteItem object, {bool saveLinks = true}) {
-    return putByIndexSync(r'mediaId', object, saveLinks: saveLinks);
+  Id putByEntryKeySync(FavoriteItem object, {bool saveLinks = true}) {
+    return putByIndexSync(r'entryKey', object, saveLinks: saveLinks);
   }
 
-  Future<List<Id>> putAllByMediaId(List<FavoriteItem> objects) {
-    return putAllByIndex(r'mediaId', objects);
+  Future<List<Id>> putAllByEntryKey(List<FavoriteItem> objects) {
+    return putAllByIndex(r'entryKey', objects);
   }
 
-  List<Id> putAllByMediaIdSync(List<FavoriteItem> objects,
+  List<Id> putAllByEntryKeySync(List<FavoriteItem> objects,
       {bool saveLinks = true}) {
-    return putAllByIndexSync(r'mediaId', objects, saveLinks: saveLinks);
+    return putAllByIndexSync(r'entryKey', objects, saveLinks: saveLinks);
   }
 }
 
@@ -317,6 +350,51 @@ extension FavoriteItemQueryWhere
         upper: upperId,
         includeUpper: includeUpper,
       ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterWhereClause> entryKeyEqualTo(
+      String entryKey) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'entryKey',
+        value: [entryKey],
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterWhereClause>
+      entryKeyNotEqualTo(String entryKey) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'entryKey',
+              lower: [],
+              upper: [entryKey],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'entryKey',
+              lower: [entryKey],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'entryKey',
+              lower: [entryKey],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'entryKey',
+              lower: [],
+              upper: [entryKey],
+              includeUpper: false,
+            ));
+      }
     });
   }
 
@@ -573,6 +651,142 @@ extension FavoriteItemQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'backdropPath',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition>
+      entryKeyEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'entryKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition>
+      entryKeyGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'entryKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition>
+      entryKeyLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'entryKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition>
+      entryKeyBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'entryKey',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition>
+      entryKeyStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'entryKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition>
+      entryKeyEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'entryKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition>
+      entryKeyContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'entryKey',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition>
+      entryKeyMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'entryKey',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition>
+      entryKeyIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'entryKey',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition>
+      entryKeyIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'entryKey',
         value: '',
       ));
     });
@@ -1342,6 +1556,141 @@ extension FavoriteItemQueryFilter
     });
   }
 
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition> userIdEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'userId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition>
+      userIdGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'userId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition>
+      userIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'userId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition> userIdBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'userId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition>
+      userIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'userId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition>
+      userIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'userId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition>
+      userIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'userId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition> userIdMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'userId',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition>
+      userIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'userId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition>
+      userIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'userId',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<FavoriteItem, FavoriteItem, QAfterFilterCondition>
       voteAverageEqualTo(
     double value, {
@@ -1442,6 +1791,18 @@ extension FavoriteItemQuerySortBy
     });
   }
 
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterSortBy> sortByEntryKey() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'entryKey', Sort.asc);
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterSortBy> sortByEntryKeyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'entryKey', Sort.desc);
+    });
+  }
+
   QueryBuilder<FavoriteItem, FavoriteItem, QAfterSortBy> sortByMediaId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'mediaId', Sort.asc);
@@ -1503,6 +1864,18 @@ extension FavoriteItemQuerySortBy
     });
   }
 
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterSortBy> sortByUserId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'userId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterSortBy> sortByUserIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'userId', Sort.desc);
+    });
+  }
+
   QueryBuilder<FavoriteItem, FavoriteItem, QAfterSortBy> sortByVoteAverage() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'voteAverage', Sort.asc);
@@ -1541,6 +1914,18 @@ extension FavoriteItemQuerySortThenBy
       thenByBackdropPathDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'backdropPath', Sort.desc);
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterSortBy> thenByEntryKey() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'entryKey', Sort.asc);
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterSortBy> thenByEntryKeyDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'entryKey', Sort.desc);
     });
   }
 
@@ -1617,6 +2002,18 @@ extension FavoriteItemQuerySortThenBy
     });
   }
 
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterSortBy> thenByUserId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'userId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QAfterSortBy> thenByUserIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'userId', Sort.desc);
+    });
+  }
+
   QueryBuilder<FavoriteItem, FavoriteItem, QAfterSortBy> thenByVoteAverage() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'voteAverage', Sort.asc);
@@ -1643,6 +2040,13 @@ extension FavoriteItemQueryWhereDistinct
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'backdropPath', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<FavoriteItem, FavoriteItem, QDistinct> distinctByEntryKey(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'entryKey', caseSensitive: caseSensitive);
     });
   }
 
@@ -1681,6 +2085,13 @@ extension FavoriteItemQueryWhereDistinct
     });
   }
 
+  QueryBuilder<FavoriteItem, FavoriteItem, QDistinct> distinctByUserId(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'userId', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<FavoriteItem, FavoriteItem, QDistinct> distinctByVoteAverage() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'voteAverage');
@@ -1705,6 +2116,12 @@ extension FavoriteItemQueryProperty
   QueryBuilder<FavoriteItem, String?, QQueryOperations> backdropPathProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'backdropPath');
+    });
+  }
+
+  QueryBuilder<FavoriteItem, String, QQueryOperations> entryKeyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'entryKey');
     });
   }
 
@@ -1735,6 +2152,12 @@ extension FavoriteItemQueryProperty
   QueryBuilder<FavoriteItem, String, QQueryOperations> typeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'type');
+    });
+  }
+
+  QueryBuilder<FavoriteItem, String, QQueryOperations> userIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'userId');
     });
   }
 

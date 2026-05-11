@@ -55,13 +55,13 @@ final watchlistRepositoryProvider = Provider<WatchlistRepository>((ref) {
 });
 
 final userWatchlistProvider = StreamProvider<List<WatchlistItem>>((ref) {
-  final user = ref.watch(authRepositoryProvider).currentUser;
-  if (user == null) return Stream.value([]);
-  return ref.watch(watchlistRepositoryProvider).watchWatchlist(user.uid);
+  final uid = ref.watch(authStateChangesProvider.select((a) => a.valueOrNull?.uid));
+  if (uid == null) return Stream.value([]);
+  return ref.watch(watchlistRepositoryProvider).watchWatchlist(uid);
 });
 
 final isInWatchlistProvider = StreamProvider.family<bool, String>((ref, mediaId) {
-  final user = ref.watch(authRepositoryProvider).currentUser;
-  if (user == null) return Stream.value(false);
-  return ref.watch(watchlistRepositoryProvider).isInWatchlist(user.uid, mediaId);
+  final uid = ref.watch(authStateChangesProvider.select((a) => a.valueOrNull?.uid));
+  if (uid == null) return Stream.value(false);
+  return ref.watch(watchlistRepositoryProvider).isInWatchlist(uid, mediaId);
 });

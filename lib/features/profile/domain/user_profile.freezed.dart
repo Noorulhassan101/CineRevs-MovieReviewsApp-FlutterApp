@@ -24,6 +24,7 @@ mixin _$UserProfile {
   String get email => throw _privateConstructorUsedError;
   String get displayName => throw _privateConstructorUsedError;
   String? get bio => throw _privateConstructorUsedError;
+  String? get photoUrl => throw _privateConstructorUsedError;
   int get followersCount => throw _privateConstructorUsedError;
   int get followingCount => throw _privateConstructorUsedError;
   DateTime? get createdAt => throw _privateConstructorUsedError;
@@ -45,6 +46,7 @@ abstract class $UserProfileCopyWith<$Res> {
       String email,
       String displayName,
       String? bio,
+      String? photoUrl,
       int followersCount,
       int followingCount,
       DateTime? createdAt});
@@ -67,6 +69,7 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
     Object? email = null,
     Object? displayName = null,
     Object? bio = freezed,
+    Object? photoUrl = freezed,
     Object? followersCount = null,
     Object? followingCount = null,
     Object? createdAt = freezed,
@@ -87,6 +90,10 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
       bio: freezed == bio
           ? _value.bio
           : bio // ignore: cast_nullable_to_non_nullable
+              as String?,
+      photoUrl: freezed == photoUrl
+          ? _value.photoUrl
+          : photoUrl // ignore: cast_nullable_to_non_nullable
               as String?,
       followersCount: null == followersCount
           ? _value.followersCount
@@ -117,6 +124,7 @@ abstract class _$$UserProfileImplCopyWith<$Res>
       String email,
       String displayName,
       String? bio,
+      String? photoUrl,
       int followersCount,
       int followingCount,
       DateTime? createdAt});
@@ -137,6 +145,7 @@ class __$$UserProfileImplCopyWithImpl<$Res>
     Object? email = null,
     Object? displayName = null,
     Object? bio = freezed,
+    Object? photoUrl = freezed,
     Object? followersCount = null,
     Object? followingCount = null,
     Object? createdAt = freezed,
@@ -157,6 +166,10 @@ class __$$UserProfileImplCopyWithImpl<$Res>
       bio: freezed == bio
           ? _value.bio
           : bio // ignore: cast_nullable_to_non_nullable
+              as String?,
+      photoUrl: freezed == photoUrl
+          ? _value.photoUrl
+          : photoUrl // ignore: cast_nullable_to_non_nullable
               as String?,
       followersCount: null == followersCount
           ? _value.followersCount
@@ -182,6 +195,7 @@ class _$UserProfileImpl implements _UserProfile {
       required this.email,
       required this.displayName,
       this.bio,
+      this.photoUrl,
       this.followersCount = 0,
       this.followingCount = 0,
       this.createdAt});
@@ -198,6 +212,8 @@ class _$UserProfileImpl implements _UserProfile {
   @override
   final String? bio;
   @override
+  final String? photoUrl;
+  @override
   @JsonKey()
   final int followersCount;
   @override
@@ -208,7 +224,7 @@ class _$UserProfileImpl implements _UserProfile {
 
   @override
   String toString() {
-    return 'UserProfile(uid: $uid, email: $email, displayName: $displayName, bio: $bio, followersCount: $followersCount, followingCount: $followingCount, createdAt: $createdAt)';
+    return 'UserProfile(uid: $uid, email: $email, displayName: $displayName, bio: $bio, photoUrl: $photoUrl, followersCount: $followersCount, followingCount: $followingCount, createdAt: $createdAt)';
   }
 
   @override
@@ -221,6 +237,8 @@ class _$UserProfileImpl implements _UserProfile {
             (identical(other.displayName, displayName) ||
                 other.displayName == displayName) &&
             (identical(other.bio, bio) || other.bio == bio) &&
+            (identical(other.photoUrl, photoUrl) ||
+                other.photoUrl == photoUrl) &&
             (identical(other.followersCount, followersCount) ||
                 other.followersCount == followersCount) &&
             (identical(other.followingCount, followingCount) ||
@@ -232,7 +250,7 @@ class _$UserProfileImpl implements _UserProfile {
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, uid, email, displayName, bio,
-      followersCount, followingCount, createdAt);
+      photoUrl, followersCount, followingCount, createdAt);
 
   @JsonKey(ignore: true)
   @override
@@ -254,6 +272,7 @@ abstract class _UserProfile implements UserProfile {
       required final String email,
       required final String displayName,
       final String? bio,
+      final String? photoUrl,
       final int followersCount,
       final int followingCount,
       final DateTime? createdAt}) = _$UserProfileImpl;
@@ -269,6 +288,8 @@ abstract class _UserProfile implements UserProfile {
   String get displayName;
   @override
   String? get bio;
+  @override
+  String? get photoUrl;
   @override
   int get followersCount;
   @override

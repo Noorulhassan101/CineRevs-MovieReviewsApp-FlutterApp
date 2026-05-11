@@ -1,3 +1,4 @@
+import 'package:zenthra/shared/utils/adaptive_colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -91,8 +92,8 @@ class _MediaCardState extends State<MediaCard> {
                           const SizedBox(width: 2),
                           Text(
                             widget.item.voteAverage.toStringAsFixed(1),
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: context.adaptiveWhite,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
@@ -130,8 +131,8 @@ class _MediaCardState extends State<MediaCard> {
                     widget.item.title.toUpperCase(),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: context.adaptiveWhite,
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1,

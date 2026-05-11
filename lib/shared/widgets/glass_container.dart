@@ -1,3 +1,4 @@
+import 'package:zenthra/shared/utils/adaptive_colors.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
@@ -41,10 +42,10 @@ class GlassContainer extends StatelessWidget {
           filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(opacity),
+              color: context.adaptiveWhite.withOpacity(opacity),
               borderRadius: BorderRadius.circular(borderRadius),
               border: border ?? Border.all(
-                color: Colors.white.withOpacity(0.1),
+                color: context.adaptiveWhite.withOpacity(0.1),
                 width: 1.5,
               ),
             ),

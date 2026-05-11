@@ -22,7 +22,7 @@ final favoritesRepositoryProvider = Provider<FavoritesRepository>.internal(
 );
 
 typedef FavoritesRepositoryRef = ProviderRef<FavoritesRepository>;
-String _$isFavoriteHash() => r'8d8014a3beaa776829249dfff0babbbef5463576';
+String _$isFavoriteHash() => r'f830e49bf3c7c908a8e3e8dcb87cb7c5f2a6041a';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -171,7 +171,7 @@ class _IsFavoriteProviderElement extends AutoDisposeFutureProviderElement<bool>
   String get mediaId => (origin as IsFavoriteProvider).mediaId;
 }
 
-String _$favoritesListHash() => r'ec944d0008ecaacee12cc6af93375c3360c8623e';
+String _$favoritesListHash() => r'19fdbe31c516cfacafa4884b8ffbcd8b6f53a076';
 
 /// See also [favoritesList].
 @ProviderFor(favoritesList)

@@ -47,11 +47,17 @@ class AppTheme {
         background: AppColors.lightBackground,
       ),
       textTheme: _getTextTheme(AppColors.lightTextPrimary, AppColors.lightTextSecondary),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        iconTheme: IconThemeData(color: AppColors.lightTextPrimary),
+        iconTheme: const IconThemeData(color: AppColors.lightTextPrimary),
+        titleTextStyle: GoogleFonts.outfit(
+          color: AppColors.lightTextPrimary,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 2,
+        ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.lightSurface,

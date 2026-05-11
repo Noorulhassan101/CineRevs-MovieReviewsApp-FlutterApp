@@ -32,6 +32,8 @@ mixin _$Review {
   int get likesCount => throw _privateConstructorUsedError;
   List<String> get likedBy => throw _privateConstructorUsedError;
   int get commentsCount => throw _privateConstructorUsedError;
+  String get communityId => throw _privateConstructorUsedError;
+  String get communityName => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -54,7 +56,9 @@ abstract class $ReviewCopyWith<$Res> {
       DateTime createdAt,
       int likesCount,
       List<String> likedBy,
-      int commentsCount});
+      int commentsCount,
+      String communityId,
+      String communityName});
 }
 
 /// @nodoc
@@ -81,6 +85,8 @@ class _$ReviewCopyWithImpl<$Res, $Val extends Review>
     Object? likesCount = null,
     Object? likedBy = null,
     Object? commentsCount = null,
+    Object? communityId = null,
+    Object? communityName = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -127,6 +133,14 @@ class _$ReviewCopyWithImpl<$Res, $Val extends Review>
           ? _value.commentsCount
           : commentsCount // ignore: cast_nullable_to_non_nullable
               as int,
+      communityId: null == communityId
+          ? _value.communityId
+          : communityId // ignore: cast_nullable_to_non_nullable
+              as String,
+      communityName: null == communityName
+          ? _value.communityName
+          : communityName // ignore: cast_nullable_to_non_nullable
+              as String,
     ) as $Val);
   }
 }
@@ -149,7 +163,9 @@ abstract class _$$ReviewImplCopyWith<$Res> implements $ReviewCopyWith<$Res> {
       DateTime createdAt,
       int likesCount,
       List<String> likedBy,
-      int commentsCount});
+      int commentsCount,
+      String communityId,
+      String communityName});
 }
 
 /// @nodoc
@@ -174,6 +190,8 @@ class __$$ReviewImplCopyWithImpl<$Res>
     Object? likesCount = null,
     Object? likedBy = null,
     Object? commentsCount = null,
+    Object? communityId = null,
+    Object? communityName = null,
   }) {
     return _then(_$ReviewImpl(
       id: null == id
@@ -220,6 +238,14 @@ class __$$ReviewImplCopyWithImpl<$Res>
           ? _value.commentsCount
           : commentsCount // ignore: cast_nullable_to_non_nullable
               as int,
+      communityId: null == communityId
+          ? _value.communityId
+          : communityId // ignore: cast_nullable_to_non_nullable
+              as String,
+      communityName: null == communityName
+          ? _value.communityName
+          : communityName // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -238,7 +264,9 @@ class _$ReviewImpl implements _Review {
       required this.createdAt,
       this.likesCount = 0,
       final List<String> likedBy = const [],
-      this.commentsCount = 0})
+      this.commentsCount = 0,
+      this.communityId = 'global',
+      this.communityName = 'Global'})
       : _likedBy = likedBy;
 
   factory _$ReviewImpl.fromJson(Map<String, dynamic> json) =>
@@ -277,10 +305,16 @@ class _$ReviewImpl implements _Review {
   @override
   @JsonKey()
   final int commentsCount;
+  @override
+  @JsonKey()
+  final String communityId;
+  @override
+  @JsonKey()
+  final String communityName;
 
   @override
   String toString() {
-    return 'Review(id: $id, userId: $userId, userName: $userName, mediaId: $mediaId, mediaType: $mediaType, rating: $rating, comment: $comment, createdAt: $createdAt, likesCount: $likesCount, likedBy: $likedBy, commentsCount: $commentsCount)';
+    return 'Review(id: $id, userId: $userId, userName: $userName, mediaId: $mediaId, mediaType: $mediaType, rating: $rating, comment: $comment, createdAt: $createdAt, likesCount: $likesCount, likedBy: $likedBy, commentsCount: $commentsCount, communityId: $communityId, communityName: $communityName)';
   }
 
   @override
@@ -303,7 +337,11 @@ class _$ReviewImpl implements _Review {
                 other.likesCount == likesCount) &&
             const DeepCollectionEquality().equals(other._likedBy, _likedBy) &&
             (identical(other.commentsCount, commentsCount) ||
-                other.commentsCount == commentsCount));
+                other.commentsCount == commentsCount) &&
+            (identical(other.communityId, communityId) ||
+                other.communityId == communityId) &&
+            (identical(other.communityName, communityName) ||
+                other.communityName == communityName));
   }
 
   @JsonKey(ignore: true)
@@ -320,7 +358,9 @@ class _$ReviewImpl implements _Review {
       createdAt,
       likesCount,
       const DeepCollectionEquality().hash(_likedBy),
-      commentsCount);
+      commentsCount,
+      communityId,
+      communityName);
 
   @JsonKey(ignore: true)
   @override
@@ -348,7 +388,9 @@ abstract class _Review implements Review {
       required final DateTime createdAt,
       final int likesCount,
       final List<String> likedBy,
-      final int commentsCount}) = _$ReviewImpl;
+      final int commentsCount,
+      final String communityId,
+      final String communityName}) = _$ReviewImpl;
 
   factory _Review.fromJson(Map<String, dynamic> json) = _$ReviewImpl.fromJson;
 
@@ -374,6 +416,10 @@ abstract class _Review implements Review {
   List<String> get likedBy;
   @override
   int get commentsCount;
+  @override
+  String get communityId;
+  @override
+  String get communityName;
   @override
   @JsonKey(ignore: true)
   _$$ReviewImplCopyWith<_$ReviewImpl> get copyWith =>

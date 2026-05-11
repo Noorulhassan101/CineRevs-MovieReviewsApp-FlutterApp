@@ -1,3 +1,4 @@
+import 'package:zenthra/shared/utils/adaptive_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/notifications_repository.dart';
@@ -31,8 +32,8 @@ class NotificationsScreen extends ConsumerWidget {
       body: notificationsAsync.when(
         data: (notifications) {
           if (notifications.isEmpty) {
-            return const Center(
-              child: Text('NO NEW ALERTS.', style: TextStyle(color: Colors.white24, letterSpacing: 1)),
+            return Center(
+              child: Text('NO NEW ALERTS.', style: TextStyle(color: context.adaptiveWhite24, letterSpacing: 1)),
             );
           }
           return ListView.builder(
@@ -63,10 +64,10 @@ class _NotificationTile extends ConsumerWidget {
         }
       },
       leading: CircleAvatar(
-        backgroundColor: notification.isRead ? Colors.white10 : AppColors.primaryAccent.withOpacity(0.2),
+        backgroundColor: notification.isRead ? context.adaptiveWhite10 : AppColors.primaryAccent.withOpacity(0.2),
         child: Icon(
           _getIcon(notification.type),
-          color: notification.isRead ? Colors.white24 : AppColors.primaryAccent,
+          color: notification.isRead ? context.adaptiveWhite24 : AppColors.primaryAccent,
           size: 18,
         ),
       ),
@@ -74,13 +75,13 @@ class _NotificationTile extends ConsumerWidget {
         '${notification.fromUserName.toUpperCase()} ${_getActionText(notification.type)}',
         style: TextStyle(
           fontSize: 13,
-          color: notification.isRead ? Colors.white38 : Colors.white,
+          color: notification.isRead ? context.adaptiveWhite38 : context.adaptiveWhite,
           fontWeight: notification.isRead ? FontWeight.normal : FontWeight.bold,
         ),
       ),
       subtitle: Text(
         _getTimeAgo(notification.createdAt),
-        style: const TextStyle(fontSize: 10, color: Colors.white24),
+        style: TextStyle(fontSize: 10, color: context.adaptiveWhite24),
       ),
       trailing: !notification.isRead 
         ? const CircleAvatar(radius: 4, backgroundColor: AppColors.primaryAccent)

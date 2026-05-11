@@ -1,15 +1,63 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../auth/data/auth_repository.dart';
 import '../domain/user_profile.dart';
 import '../../notifications/data/notifications_repository.dart';
 import '../../notifications/domain/notification_model.dart';
+import '../../../core/constants/cloudinary_config.dart';
 
 part 'social_repository.g.dart';
 
 class SocialRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final Dio _dio = Dio();
+
+  /// Upload profile picture to Cloudinary (unsigned preset; do not set multipart contentType manually).
+  Future<String> uploadProfilePicture(String userId, File file) async {
+    try {
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          file.path,
+          filename: '$userId.jpg',
+        ),
+        'upload_preset': CloudinaryConfig.uploadPreset,
+      });
+
+      final response = await _dio.post<Map<String, dynamic>>(
+        CloudinaryConfig.uploadUrl,
+        data: formData,
+        options: Options(
+          followRedirects: true,
+          validateStatus: (status) => status != null && status < 500,
+          responseType: ResponseType.json,
+        ),
+      );
+
+      final data = response.data;
+      if (response.statusCode == 200 && data != null) {
+        final imageUrl = data['secure_url'] as String?;
+        if (imageUrl != null && imageUrl.isNotEmpty) {
+          debugPrint('Profile picture uploaded to Cloudinary');
+          return imageUrl;
+        }
+      }
+      final body = data;
+      if (response.statusCode == 401) {
+        throw Exception(
+          'Cloudinary upload failed (401). Check cloud name, unsigned preset name, and '
+          'lib/core/constants/cloudinary_config.dart (or --dart-define). Raw: $body',
+        );
+      }
+      throw Exception('Cloudinary upload failed: ${response.statusCode} - $body');
+    } catch (e) {
+      debugPrint('Error uploading profile picture: $e');
+      rethrow;
+    }
+  }
 
   Future<void> followUser({
     required String currentUserId,
@@ -107,7 +155,11 @@ class SocialRepository {
         .snapshots()
         .map((snapshot) {
       if (!snapshot.exists) return null;
-      return UserProfile.fromJson(snapshot.data()!);
+      final data = snapshot.data()!;
+      if (data['createdAt'] is Timestamp) {
+        data['createdAt'] = (data['createdAt'] as Timestamp).toDate().toIso8601String();
+      }
+      return UserProfile.fromJson(data);
     });
   }
 }

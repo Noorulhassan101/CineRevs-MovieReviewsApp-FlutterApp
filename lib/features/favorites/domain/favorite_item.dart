@@ -6,9 +6,15 @@ part 'favorite_item.g.dart';
 class FavoriteItem {
   Id? id;
 
+  /// Stable per-account row id: `$userId|$mediaId`
   @Index(unique: true, replace: true)
+  late String entryKey;
+
+  late String userId;
+
+  @Index()
   late String mediaId;
-  
+
   late String title;
   late String overview;
   String? posterPath;
