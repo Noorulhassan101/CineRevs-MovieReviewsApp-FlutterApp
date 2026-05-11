@@ -22,7 +22,7 @@ Zenthra is designed to provide an elegant, fluid, and modern user experience for
 ## Download APK
 You can install and test Zenthra directly on your Android device.
 
-[Download Zenthra APK](releases/Zenthra.apk)
+[Download Zenthra APK from the Releases tab](https://github.com/Noorulhassan101/CineRevs-MovieReviewsApp-FlutterApp/releases)
 
 ## Getting Started for Developers
 To run this project locally:
